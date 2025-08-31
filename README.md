@@ -1,3 +1,21 @@
+# Trabajo Práctico 0 - Sistemas Distribuidos 1 (Roca)
+
+## Alumno: Felipe Santino Ascencio.
+
+## Padrón: 110675.
+
+## Corrector: A definir.
+
+## Descripción de la resolución
+
+En este repositorio se encuentra la resolución del 'Trabajo Práctico 0' de la materia 'Sistemas Distribuidos 1 (Roca)' correspondiente al segundo cuatrimestre del año 2025.
+
+Cada ejercicio se encuentra resuelto en su rama correspondiente, como fue requerido en las condiciones de entrega.
+
+En cada rama se encuentra la documentación respectiva para la resolución de cada ejercicio y a continuación, en este mismo documento, se deja el enunciado brindado por la cátedra.
+
+---
+
 # TP0: Docker + Comunicaciones + Concurrencia
 
 En el presente repositorio se provee un esqueleto básico de cliente/servidor, en donde todas las dependencias del mismo se encuentran encapsuladas en containers. Los alumnos deberán resolver una guía de ejercicios incrementales, teniendo en cuenta las condiciones de entrega descritas al final de este enunciado.
