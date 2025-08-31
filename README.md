@@ -55,3 +55,10 @@ Una vez generado el archivo .yaml, se puede desplegar el entorno completo utiliz
 make docker-compose-up
 
 ```
+
+### Archivos modificados
+
+#### Archivos creados
+
+- generar-compose.sh.
+- mi-generador.py.
