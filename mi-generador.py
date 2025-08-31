@@ -14,10 +14,12 @@ SERVIDOR_NOMBRE_CONTENEDOR = "server"
 SERVIDOR_IMAGEN = "server:latest"
 SERVIDOR_ENTRYPOINT = "python3 /main.py"
 SERVIDOR_ENV_PYTHONUNBUFFERED = "1"
+VOLUMEN_SERVIDOR = "./server/config.ini:/config.ini"
 
 # Servicio cliente.
 CLIENTE_IMAGEN = "client:latest"
 CLIENTE_ENTRYPOINT = "/client"
+VOLUMEN_CLIENTE  = "./client/config.yaml:/config.yaml"
 
 # Red.
 NOMBRE_RED = "testing_net"
@@ -41,7 +43,7 @@ services:
     networks:
     - {NOMBRE_RED}
     volumes:
-      - ./server/config.ini:/config.ini
+      - {VOLUMEN_SERVIDOR}
 """
 
     # Bloques de cada cliente.
@@ -56,7 +58,7 @@ services:
     networks:
       - {NOMBRE_RED}
     volumes:
-      - ./client/config.yaml:/config.yaml
+      - {VOLUMEN_CLIENTE}
     depends_on:
       - {SERVIDOR_NOMBRE_SERVICIO}
 """
