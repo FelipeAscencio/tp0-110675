@@ -48,7 +48,7 @@ make docker-compose-up
 
 ### Archivos modificados
 
-#### Archivos modificados
+#### Archivos editados
 
 - mi-generador.py.
 - docker-compose-dev.yaml.
