@@ -40,6 +40,8 @@ services:
     - PYTHONUNBUFFERED={SERVIDOR_ENV_PYTHONUNBUFFERED}
     networks:
     - {NOMBRE_RED}
+    volumes:
+      - ./server/config.ini:/config.ini
 """
 
     # Bloques de cada cliente.
@@ -53,6 +55,8 @@ services:
       - CLI_ID={i}
     networks:
       - {NOMBRE_RED}
+    volumes:
+      - ./client/config.yaml:/config.yaml
     depends_on:
       - {SERVIDOR_NOMBRE_SERVICIO}
 """
