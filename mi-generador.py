@@ -14,12 +14,10 @@ SERVIDOR_NOMBRE_CONTENEDOR = "server"
 SERVIDOR_IMAGEN = "server:latest"
 SERVIDOR_ENTRYPOINT = "python3 /main.py"
 SERVIDOR_ENV_PYTHONUNBUFFERED = "1"
-SERVIDOR_ENV_LOGGING_LEVEL = "DEBUG"
 
 # Servicio cliente.
 CLIENTE_IMAGEN = "client:latest"
 CLIENTE_ENTRYPOINT = "/client"
-CLIENTE_ENV_LOG_LEVEL = "DEBUG"
 
 # Red.
 NOMBRE_RED = "testing_net"
@@ -40,7 +38,6 @@ services:
     entrypoint: {SERVIDOR_ENTRYPOINT}
     environment:
     - PYTHONUNBUFFERED={SERVIDOR_ENV_PYTHONUNBUFFERED}
-    - LOGGING_LEVEL={SERVIDOR_ENV_LOGGING_LEVEL}
     networks:
     - {NOMBRE_RED}
 """
@@ -54,7 +51,6 @@ services:
     entrypoint: {CLIENTE_ENTRYPOINT}
     environment:
       - CLI_ID={i}
-      - CLI_LOG_LEVEL={CLIENTE_ENV_LOG_LEVEL}
     networks:
       - {NOMBRE_RED}
     depends_on:
