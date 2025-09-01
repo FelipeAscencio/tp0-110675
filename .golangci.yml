@@ -21,6 +21,7 @@ issues:
     - path: client/common/utils.go
       linters:
         - gofmt
+        - goimports
   exclude-dirs:
     - vendor
   exclude-use-default: false
