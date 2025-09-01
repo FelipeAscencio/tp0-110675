@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Habilita opciones para mejorar la seguridad y manejo de errores en el script.
+set -euo pipefail
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 # Imprime en pantalla el primer argumento recibido.
 echo "Nombre del archivo de salida: $1"
 
