@@ -17,6 +17,7 @@ import (
 const (
 	MAX_TAMANIO_MENSAJE = 8192 // Máximo tamaño del mensaje (8 KB),
 	TAMANIO_BYTES       = 2    // Cantidad de bytes reservados para representar el tamaño,
+	const FINISH_MSG = "FINISH" // Mensaje de finalización.
 )
 
 // Estructura que representa una apuesta.
@@ -78,17 +79,28 @@ func receiveMessage(conn net.Conn) (string, error) {
 	return msg, err
 }
 
-// Función que envía una apuesta al servidor a través del socket.
-func sendBet(conn net.Conn, bet Bet) error {
-	message := fmt.Sprintf(
-		"%s,%s,%s,%s,%s,%s\n",
-		bet.AgencyId,
-		bet.Name,
-		bet.LastName,
-		bet.Document,
-		bet.BirthDate,
-		bet.Number,
-	)
+// Función que envía un batch de apuestas al servidor a través del socket.
+func sendBetBatch(conn net.Conn, batch []Bet, betCount int) error {
+	bets_str := make([]string, 0, len(batch))
+	for _, bet := range batch {
+		bet_str := fmt.Sprintf(
+			"%s,%s,%s,%s,%s,%s",
+			bet.AgencyId,
+			bet.Name,
+			bet.LastName,
+			bet.Document,
+			bet.BirthDate,
+			bet.Number,
+		)
+		
+		bets_str = append(bets_str, bet_str)
+	}
 
-	return sendMessage(conn, message)
+	mensaje := strings.Join(bets_str, ";")
+	return sendMessage(conn, mensaje)
+}
+
+// Función que envía el mensaje de finalización al servidor a través del socket.
+func sendFinishMessage(conn net.Conn) error {
+	return sendMessage(conn, FINISH_MSJ)
 }

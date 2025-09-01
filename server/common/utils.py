@@ -19,6 +19,7 @@ INDEX_APELLIDO = 2
 INDEX_DOCUMENTO = 3
 INDEX_FECHA_NACIMIENTO = 4
 INDEX_NUMERO = 5
+FINISH_MSJ = "FINISH"
 
 # Clase que representa una apuesta.
 """ A lottery bet registry. """
@@ -83,7 +84,7 @@ def send_message(client_sock, message): #CAMBIAR POR SENDALL SI O SI PARA QUE GA
 # Función para decodificar una apuesta recibida a través de un socket.
 def decode_bet(client_sock):
     mensaje = receive_message(client_sock)
-    if mensaje == "FINISH":
+    if mensaje == FINISH_MSJ:
         return None, True
     
     bets_decodificadas = []

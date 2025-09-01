@@ -3,6 +3,7 @@ package main
 
 // Importación de los paquetes necesarios.
 import (
+	"encoding/csv"
 	"fmt"
 	"os"
 	"os/signal"
@@ -11,7 +12,7 @@ import (
 	"time"
 	"github.com/op/go-logging"
 	"github.com/pkg/errors"
-	"github.com/spf13/viper"
+	"github.com/spf13/viper"	
 	"github.com/7574-sistemas-distribuidos/docker-compose-init/client/common"
 )
 
@@ -33,6 +34,7 @@ func InitConfig() (*viper.Viper, *common.Bet, error) {
 	v.BindEnv("loop", "period")
 	v.BindEnv("loop", "amount")
 	v.BindEnv("log", "level")
+	v.BindEnv("batch", "maxAmount") // Agregado para el ejercicio 6.
 	v.SetConfigFile("./config.yaml")
 	if err := v.ReadInConfig(); err != nil {
 		fmt.Printf("Configuration could not be read from config file. Using env variables instead")
@@ -40,21 +42,6 @@ func InitConfig() (*viper.Viper, *common.Bet, error) {
 
 	if _, err := time.ParseDuration(v.GetString("loop.period")); err != nil {
 		return nil, nil, errors.Wrapf(err, "Could not parse CLI_LOOP_PERIOD env var as time.Duration.")
-	}
-
-	// Leer las variables de entorno para la apuesta (Modificación de código para el ejercicio 5).
-	nombre_apuesta := os.Getenv("NOMBRE")
-	apellido_apuesta := os.Getenv("APELLIDO")
-	documento_apuesta := os.Getenv("DOCUMENTO")
-	nacimiento_apuesta := os.Getenv("NACIMIENTO")
-	numero_apuesta := os.Getenv("NUMERO")
-	bet := &common.Bet{
-		AgencyId:  v.GetString("id"),
-		Name:      nombre_apuesta,
-		LastName:  apellido_apuesta,
-		Document:  documento_apuesta,
-		BirthDate: nacimiento_apuesta,
-		Number:    numero_apuesta,
 	}
 
 	return v, bet, nil
@@ -92,6 +79,42 @@ func PrintConfig(v *viper.Viper) {
 	)
 }
 
+// Añadido para la resolución del ejercicio 6.
+// Lee el archivo agency.csv y devuelve un slice de apuestas (common.Bet).
+func GetAgencyData(agencyId string) ([]common.Bet, error) {
+	archivo, err := os.Open("agency.csv")
+	if err != nil {
+		log.Errorf("action: read_file | result: fail | error: %v",
+			err,
+		)
+
+		return nil, err
+	}
+
+	lector := csv.NewReader(archivo)
+	lineas, err := lector.ReadAll()
+	if err != nil {
+		fmt.Println("Error reading file:", err)
+		return nil, err
+	}
+
+	var bets []common.Bet
+	for _, linea := range lineas {
+		bet := common.Bet{
+			AgencyId:  agencyId,
+			Name:      linea[0],
+			LastName:  linea[1],
+			Document:  linea[2],
+			BirthDate: linea[3],
+			Number:    linea[4],
+		}
+
+		bets = append(bets, bet)
+	}
+
+	return bets, nil
+}
+
 // Función main del programa.
 func main() {
 	v, bet, err := InitConfig()
@@ -103,6 +126,13 @@ func main() {
 		log.Criticalf("%s", err)
 	}
 
+	// Agregado para el ejercicio 6.
+	agencyId := v.GetString("id")
+	bets, err := GetAgencyData(agencyId)
+	if err != nil {
+		log.Criticalf("%s", err)
+	}
+
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGTERM)
 	PrintConfig(v)
@@ -111,8 +141,9 @@ func main() {
 		ID:            v.GetString("id"),
 		LoopAmount:    v.GetInt("loop.amount"),
 		LoopPeriod:    v.GetDuration("loop.period"),
+		BatchMaxAmount: v.GetInt("batch.maxAmount"),
 	}
 
-	client := common.NewClient(clientConfig, *bet)
+	client := common.NewClient(clientConfig, bets)
 	client.StartClientLoop(sigChan)
 }

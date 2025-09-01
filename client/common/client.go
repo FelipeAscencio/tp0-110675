@@ -14,7 +14,8 @@ import (
 // Constantes para índices de los campos de la respuesta.
 const (
 	INDEX_DOCUMENTO = 0
-	INDEX_NUMERO   = 1
+	INDEX_NUMERO = 1
+	DELAY = 100
 )
 
 // Declaración de una variable global para el logger.
@@ -22,24 +23,25 @@ var log = logging.MustGetLogger("log")
 
 // Estructura que contiene la configuración del cliente.
 type ClientConfig struct {
-	ID            string
-	ServerAddress string
-	LoopAmount    int
-	LoopPeriod    time.Duration
+	ID             string
+	ServerAddress  string
+	LoopAmount     int
+	LoopPeriod     time.Duration
+	BatchMaxAmount int
 }
 
 // Estructura que representa al cliente.
 type Client struct {
 	config ClientConfig
 	conn   net.Conn
-	bet    Bet
+	bets   []Bet
 }
 
 // Función que crea un nuevo cliente con la configuración dada.
-func NewClient(config ClientConfig, bet Bet) *Client {
+func NewClient(config ClientConfig, bets []Bet) *Client {
 	client := &Client{
 		config: config,
-		bet:    bet,
+		bets:   bets,
 	}
 
 	return client
@@ -60,41 +62,68 @@ func (c *Client) createClientSocket() error {
 	return nil
 }
 
+
 // Función que inicia el loop del cliente, enviando mensajes al servidor.
 func (c *Client) StartClientLoop(sigChan chan os.Signal) {
-	select {
-	case <-sigChan:
-		log.Infof("action: shutdown | result: success")
+	c.createClientSocket()
+	totalBets := len(c.bets)
+	contador_apuestas := 0
+
+// Loop para enviar las apuestas en lotes.	
+loop:
+	for i := 0; i < totalBets; i += c.config.BatchMaxAmount {
+		final := i + c.config.BatchMaxAmount
+		if final > totalBets {
+			final = totalBets
+		}
+
+		batch := c.bets[i:final]
+		contador_apuestas += len(batch)
+		err := sendBetBatch(c.conn, batch, contador_apuestas)
+		if err != nil {
+			return
+		}
+
+		select {
+		case <-sigChan:
+			log.Infof("action: shutdown | result: success")
+			break loop
+		default:
+		}
+	}
+
+	log.Infof("action: apuesta_enviada | result: success | cantidad: %v", contador_apuestas)
+	log.Infof("action: finalizar_envio | result: in_progress")
+	err := sendFinishMessage(c.conn)
+	if err != nil {
+		log.Errorf("action: finalizar_envio | result: fail | error: %v",
+			c.config.ID,
+			err,
+		)
+
 		return
-	default:
+	}
 
-		// Modificación de código para el ejercicio 5.
-		c.createClientSocket()
-		err := sendBet(c.conn, c.bet)
-		if err != nil {
-			return
-		}
+	mensaje, err := receiveMessage(c.conn)
+	if err != nil {
+		log.Errorf("action: finalizar_envio | result: fail | error: %v",
+			c.config.ID,
+			err,
+		)
 
-		mensaje, err := receiveMessage(c.conn)
-		if err != nil {
-			log.Errorf("action: finalizar_envio | result: fail | error: %v",
-				c.config.ID,
-				err,
-			)
+		return
+	}
 
-			return
-		}
+	contador_respuesta, _ := strconv.Atoi(strings.TrimSpace(mensaje))
+	if contador_respuesta != totalBets {
+		log.Errorf("action: finalizar_envio | result: fail | msg: %v | error: unexpected message",
+			mensaje,
+		)
 
+		return
+	} else {
+		log.Infof("action: finalizar_envio | result: success")
 		c.conn.Close()
-		informacion_respuesta := strings.Split(mensaje, ",")
-		doc_apuesta, _ := strconv.Atoi(strings.TrimSpace(c.bet.Document))
-		numero_apuesta, _ := strconv.Atoi(strings.TrimSpace(c.bet.Number))
-		doc_respuesta, _ := strconv.Atoi(strings.TrimSpace(informacion_respuesta[INDEX_DOCUMENTO]))
-		numero_respuesta, _ := strconv.Atoi(strings.TrimSpace(informacion_respuesta[INDEX_NUMERO]))
-		if doc_respuesta == doc_apuesta && numero_respuesta == numero_apuesta {
-			log.Infof("action: apuesta_enviada | result: success | dni: %v | numero: %v", c.bet.Document, c.bet.Number)
-		} else {
-			log.Errorf("action: apuesta_enviada | result: fail | dni: %v | numero: %v", c.bet.Document, c.bet.Number)
-		}
+		time.Sleep(DELAY * time.Millisecond)
 	}
 }
