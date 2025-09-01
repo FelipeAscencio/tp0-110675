@@ -15,8 +15,8 @@ import (
 // Constantes para índices de los campos de la respuesta.
 const (
 	INDEX_DOCUMENTO = 0
-	INDEX_NUMERO = 1
-	DELAY = 100
+	INDEX_NUMERO 	= 1
+	DELAY 			= 100
 )
 
 // Declaración de una variable global para el logger.
