@@ -59,7 +59,7 @@ func (c *Client) StartClientLoop() {
 		_ = c.createClientSocket()
 
 		// TODO: Modify the send to avoid short-write
-		_ = fmt.Fprintf(
+		_, _ = fmt.Fprintf(
 			c.conn,
 			"[CLIENT %v] Message N°%v\n",
 			c.config.ID,
