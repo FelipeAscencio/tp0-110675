@@ -26,4 +26,6 @@ make docker-compose-up
 
 ### Archivos modificados
 
-X.
+#### Archivos editados
+
+- server/common/server.py
