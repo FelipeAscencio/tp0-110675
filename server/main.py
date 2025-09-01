@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
 
 # Importación de los paquetes necesarios.
-import sys
-import signal
+import sys   # Modificación de código para manejar la señal pedida.
+import signal   # Modificación de código para manejar la señal pedida.
 from configparser import ConfigParser
 from common.server import Server
 import logging
 import os
 
 # Variable global que contiene la instancia del servidor.
-global server
-server = None
+global server   # Modificación de código para manejar la señal pedida.
+server = None   # Modificación de código para manejar la señal pedida.
 
 # Función que maneja la señal de terminación para apagar el servidor de manera ordenada.
+# Modificación de código para manejar la señal pedida.
 def graceful_shutdown(signum=None, frame=None):
     global server
     server.shutdown()
@@ -58,7 +59,7 @@ def main():
 
     # Inicializar el servidor e iniciar el bucle del servidor.
     server = Server(port, listen_backlog)
-    signal.signal(signal.SIGTERM, graceful_shutdown)
+    signal.signal(signal.SIGTERM, graceful_shutdown)   # Modificación de código para manejar la señal pedida.
     server.run()
 
 # Inicialización del logging de Python.
@@ -67,7 +68,7 @@ def initialize_log(logging_level):
     Agrega la marca de tiempo para identificar en los logs de Docker
     la fecha y hora en que llegó cada mensaje.
     """
-    
+
     logging.basicConfig(
         format='%(asctime)s %(levelname)-8s %(message)s',
         level=logging_level,

@@ -1,7 +1,7 @@
 # Importación de los paquetes necesarios.
 import socket
 import logging
-import signal
+import signal   # Modificación de código para manejar la señal pedida.
 
 # Clase que implementa el servidor.
 class Server:
@@ -10,10 +10,10 @@ class Server:
         self._server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._server_socket.bind(('', port))
         self._server_socket.listen(listen_backlog)
-        self.running = False
+        self.running = False   # Modificación de código para manejar la señal pedida.
         self.client_sockets = []
 
-    # Loop principal del servidor.
+    # Loop principal del servidor (Modificación de código para manejar la señal pedida).
     def run(self):
         """
         Bucle de servidor ficticio.
@@ -33,7 +33,7 @@ class Server:
                 if not self.running:
                     break
     
-    # Función que apaga el servidor de manera ordenada.
+    # Función que apaga el servidor de manera ordenada (Modificación de código para manejar la señal pedida).
     def shutdown(self, signum=None, frame=None):
         self.running = False
         logging.info(f'action: shutdown | result: in_progress')

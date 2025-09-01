@@ -5,9 +5,9 @@ package main
 import (
 	"fmt"
 	"os"
-	"os/signal"
+	"os/signal"   // Modificación de código para manejar la señal pedida.
 	"strings"
-	"syscall"
+	"syscall"   // Modificación de código para manejar la señal pedida.
 	"time"
 	"github.com/op/go-logging"
 	"github.com/pkg/errors"
@@ -88,8 +88,9 @@ func main() {
 		log.Criticalf("%s", err)
 	}
 
-	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, syscall.SIGTERM)
+	sigChan := make(chan os.Signal, 1)   // Modificación de código para manejar la señal pedida.
+	signal.Notify(sigChan, syscall.SIGTERM)   // Modificación de código para manejar la señal pedida.
+
 	PrintConfig(v)
 	clientConfig := common.ClientConfig{
 		ServerAddress: v.GetString("server.address"),
@@ -99,5 +100,6 @@ func main() {
 	}
 
 	client := common.NewClient(clientConfig)
-	client.StartClientLoop(sigChan)
+
+	client.StartClientLoop(sigChan)   // Modificación de código para manejar la señal pedida.
 }

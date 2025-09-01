@@ -6,7 +6,7 @@ import (
 	"bufio"
 	"fmt"
 	"net"
-	"os"
+	"os"   // Modificación de código para manejar la señal pedida.
 	"time"
 	"github.com/op/go-logging"
 )
@@ -53,13 +53,13 @@ func (c *Client) createClientSocket() error {
 }
 
 // Función que inicia el loop del cliente, enviando mensajes al servidor.
-func (c *Client) StartClientLoop(sigChan chan os.Signal) {
+func (c *Client) StartClientLoop(sigChan chan os.Signal) {   // Modificación de código para manejar la señal pedida.
 	for msgID := 1; msgID <= c.config.LoopAmount; msgID++ {
-		select {
-		case <-sigChan:
-			log.Infof("action: shutdown | result: success")
-			return
-		default:
+		select {   // Modificación de código para manejar la señal pedida.
+		case <-sigChan:   // Modificación de código para manejar la señal pedida.
+			log.Infof("action: shutdown | result: success")   // Modificación de código para manejar la señal pedida.
+			return   // Modificación de código para manejar la señal pedida.
+		default:   // Modificación de código para manejar la señal pedida.
 			c.createClientSocket()
 			fmt.Fprintf(
 				c.conn,
