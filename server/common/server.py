@@ -61,8 +61,10 @@ class Server:
                 if terminado:
                     utils.acknowledge_bets(client_sock, contador_bet)
                     logging.info(
-                        f"action: apuesta_recibida | result: success | cantidad: {contador_bet}"
+                        f"action: apuesta_recibida | result: success | "
+                        f"cantidad: {contador_bet}"
                     )
+                    
                     break
 
                 utils.store_bets(bets)
