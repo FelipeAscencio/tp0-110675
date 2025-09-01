@@ -1,87 +1,55 @@
 # Import de las librerías necesarias.
 import sys
 
-# Constantes para índices de argumentos.
-INDICE_NOMBRE_ARCHIVO = 1
-INDICE_CANT_CLIENTES = 2
-
-# Metadatos del stack.
-PROJECT_NAME            = "tp0"
-
-# Servicio Servidor.
-SERVER_NAME             = "server"
-SERVER_IMAGE            = "server:latest"
-SERVER_ENTRYPOINT       = "python3 /main.py"
-ENV_PYTHON_UNBUFFERED   = "PYTHONUNBUFFERED=1"
-SERVER_CONFIG           = "./server/config.ini:/config.ini"
-
-# Servicio Cliente.
-CLIENT_IMAGE            = "client:latest"
-CLIENT_PREFIX           = "client"
-CLIENT_ENTRYPOINT       = "/client"
-ENV_CLI_ID              = "CLI_ID"
-CLIENT_NOMBRE           = "Santiago Lionel"
-CLIENT_APELLIDO         = "Lorca"
-CLIENT_DOCUMENTO        = "30904465"
-CLIENT_NACIMIENTO       = "1999-03-17"
-CLIENT_NUMERO           = "7574"
-CLIENT_CONFIG           = "./client/config.yaml:/config.yaml"
-
-# Red.
-NETWORK_NAME            = "testing_net"
-NETWORK_DRIVER          = "default"
-NETWORK_SUBNET          = "172.25.125.0/24"
-
-# Función para generar el archivo docker-compose.
-def generar_archivo(nombre_archivo, clientes):
-    compose = f"""name: {PROJECT_NAME}
+def generate_file(filename, clients):
+    compose = f"""name: tp0
 services:
-  {SERVER_NAME}:
-    container_name: {SERVER_NAME}
-    image: {SERVER_IMAGE}
-    entrypoint: {SERVER_ENTRYPOINT}
+  server:
+    container_name: server
+    image: server:latest
+    entrypoint: python3 /main.py
     environment:
-    - {ENV_PYTHON_UNBUFFERED}
+    - PYTHONUNBUFFERED=1
     - CLIENTS={clients}
     networks:
-    - {NETWORK_NAME}
+    - testing_net
     volumes:
-      - {SERVER_CONFIG}
+      - ./server/config.ini:/config.ini
 """
     
-    for i in range(1, clientes + 1):
+    for i in range(1, clients + 1):
         compose += f"""
-  {CLIENT_PREFIX}{i}:
-    container_name: {CLIENT_PREFIX}{i}
-    image: {CLIENT_IMAGE}
-    entrypoint: {CLIENT_ENTRYPOINT}
+  client{i}:
+    container_name: client{i}
+    image: client:latest
+    entrypoint: /client
     environment:
-      - {ENV_CLI_ID}={i}
+      - CLI_ID={i}
     networks:
-      - {NETWORK_NAME}
+      - testing_net
     volumes:
-      - {CLIENT_CONFIG}
+      - ./client/config.yaml:/config.yaml
       - ./.data/agency-{i}.csv:/agency.csv
     depends_on:
-      - {SERVER_NAME}
+      - server
 """
     
-    compose += f"""
+    compose += """
 networks:
-  {NETWORK_NAME}:
+  testing_net:
     ipam:
-      driver: {NETWORK_DRIVER}
+      driver: default
       config:
-        - subnet: {NETWORK_SUBNET}
+        - subnet: 172.25.125.0/24
 """
     
-    with open(nombre_archivo, "w") as f:
+    with open(filename, "w") as f:
         f.write(compose)
+    
+    print(f"Archivo {filename} generado con {clients} clientes.")
 
-    print(f"Archivo {nombre_archivo} generado con {clientes} clientes.")
-
-# Punto de entrada del script.
 if __name__ == "__main__":
-    nombre_archivo = sys.argv[INDICE_NOMBRE_ARCHIVO]
-    clientes = int(sys.argv[INDICE_CANT_CLIENTES])
-    generar_archivo(nombre_archivo, clientes)
+    filename = sys.argv[1]
+    clients = int(sys.argv[2])
+    
+    generate_file(filename, clients)
