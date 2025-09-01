@@ -1,0 +1,29 @@
+run:
+  timeout: 5m
+
+linters:
+  enable:
+    - govet
+    - gofmt
+    - goimports
+    - ineffassign
+    - staticcheck
+    - errcheck
+
+linters-settings:
+  gofmt:
+    simplify: true
+  goimports:
+    local-prefixes: github.com/7574-sistemas-distribuidos/docker-compose-init
+
+issues:
+  exclude-rules:
+    - path: client/common/utils.go
+      linters:
+        - gofmt
+        - goimports
+  exclude-dirs:
+    - vendor
+  exclude-use-default: false
+  max-issues-per-linter: 0
+  max-same-issues: 0

@@ -13,9 +13,12 @@ import (
 
 // Constantes de configuración del protocolo
 const (
-	MAX_TAMANIO_MENSAJE = 8192   // Máximo tamaño del mensaje (8 KB)
-	TAMANIO_BYTES       = 2      // Cantidad de bytes reservados para representar el tamaño
-	FINISH_MSJ          = "FINISH" // Mensaje de finalización
+    // Máximo tamaño del mensaje (8 KB).
+	MAX_TAMANIO_MENSAJE = 8192
+	// Cantidad de bytes reservados para representar el tamaño.
+	TAMANIO_BYTES       = 2
+	// Mensaje de finalización.
+	FINISH_MSJ          = "FINISH"
 )
 
 // Estructura que representa una apuesta.
@@ -34,7 +37,8 @@ func sendMessage(conn net.Conn, message string) error {
 	bytes_mensaje := []byte(message)
 	largo_mensaje := len(message)
 	if largo_mensaje > MAX_TAMANIO_MENSAJE {
-		log.Error("action: send_message | result: fail | error: message exceeds 8kb") // Limitación de tamaño pedida por default.
+		// Limitación de tamaño pedida por default.
+		log.Error("action: send_message | result: fail | error: message exceeds 8kb")
 		return errors.New("message exceeds 8kb")
 	}
 
