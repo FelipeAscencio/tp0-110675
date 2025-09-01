@@ -1,5 +1,4 @@
-// Todo este archivo es generado para el ejercicio 5.
-// Declaración del paquete common.
+// Declaración del paquete common (Archivo generado para ej_5).
 package common
 
 // Importación de los paquetes necesarios.
