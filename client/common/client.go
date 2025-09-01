@@ -1,8 +1,6 @@
-// Declaración del paquete common.
+// Declaración del paquete common e imports.
 package common
 
-// Importación de los paquetes necesarios.
-// Se agregó "os" para manejar la señal pedida.
 import (
 	"bufio"
 	"fmt"
@@ -12,7 +10,6 @@ import (
 
 	"github.com/op/go-logging"
 )
-
 
 // Declaración de una variable global para el logger.
 var log = logging.MustGetLogger("log")

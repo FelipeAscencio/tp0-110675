@@ -1,8 +1,6 @@
-// Declaración del paquete main.
+// Declaración del paquete main e imports.
 package main
 
-// Importación de los paquetes necesarios.
-// Se agregan os/signal y syscall para manejar la señal pedida.
 import (
 	"fmt"
 	"os"
