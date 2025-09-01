@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
 	"github.com/op/go-logging"
 )
 
@@ -69,7 +70,7 @@ func (c *Client) StartClientLoop(sigChan chan os.Signal) {
 	default:
 
 		// Modificación de código para el ejercicio 5.
-		c.createClientSocket()
+		_ = c.createClientSocket()
 		err := sendBet(c.conn, c.bet)
 		if err != nil {
 			return
@@ -85,7 +86,7 @@ func (c *Client) StartClientLoop(sigChan chan os.Signal) {
 			return
 		}
 
-		c.conn.Close()
+		_ = c.conn.Close()
 		informacion_respuesta := strings.Split(mensaje, ",")
 		doc_apuesta, _ := strconv.Atoi(strings.TrimSpace(c.bet.Document))
 		numero_apuesta, _ := strconv.Atoi(strings.TrimSpace(c.bet.Number))

@@ -112,7 +112,8 @@ def decode_bet(client_sock):
     bet_informacion = mensaje.split(",")
     if len(bet_informacion) != CAMPOS_APUESTA_ESPERADA:
         logging.error(
-            f"action: receive_message | result: fail | ip: {direccion[0]} | msg: {mensaje} | error: Invalid bet data"
+            f"action: receive_message | result: fail | ip: {direccion[0]} | "
+            f"msg: {mensaje} | error: Invalid bet data"
         )
         raise ValueError("Invalid bet data")
 

@@ -9,9 +9,11 @@ import (
 	"strings"
 	"syscall"
 	"time"
+
 	"github.com/op/go-logging"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
+
 	"github.com/7574-sistemas-distribuidos/docker-compose-init/client/common"
 )
 
@@ -28,11 +30,11 @@ func InitConfig() (*viper.Viper, *common.Bet, error) {
 	v.AutomaticEnv()
 	v.SetEnvPrefix("cli")
 	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
-	v.BindEnv("id")
-	v.BindEnv("server", "address")
-	v.BindEnv("loop", "period")
-	v.BindEnv("loop", "amount")
-	v.BindEnv("log", "level")
+	_ = v.BindEnv("id")
+	_ = v.BindEnv("server", "address")
+	_ = v.BindEnv("loop", "period")
+	_ = v.BindEnv("loop", "amount")
+	_ = v.BindEnv("log", "level")
 	v.SetConfigFile("./config.yaml")
 	if err := v.ReadInConfig(); err != nil {
 		fmt.Printf("Configuration could not be read from config file. Using env variables instead")
