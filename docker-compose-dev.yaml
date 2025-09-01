@@ -8,7 +8,7 @@ services:
     - PYTHONUNBUFFERED=1
     networks:
     - testing_net
-    volumes: # Monta el archivo de configuración del servidor.
+    volumes:
       - ./server/config.ini:/config.ini
 
   client1:
@@ -19,7 +19,7 @@ services:
       - CLI_ID=1
     networks:
       - testing_net
-    volumes: # Monta el archivo de configuración del cliente.
+    volumes:
       - ./client/config.yaml:/config.yaml
     depends_on:
       - server
