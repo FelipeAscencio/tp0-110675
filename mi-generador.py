@@ -25,6 +25,7 @@ CLIENTE_ENV_LOG_LEVEL = "DEBUG"
 NOMBRE_RED = "testing_net"
 SUBRED_CIDR = "172.25.125.0/24"
 
+
 # Función para generar el archivo docker-compose.
 def generar_archivo(nombre_archivo: str, cantidad_clientes: int) -> None:
     """
@@ -77,6 +78,7 @@ networks:
 
     # Mensaje final.
     print(f"Archivo {nombre_archivo} generado con {cantidad_clientes} clientes.")
+
 
 # Punto de entrada del programa.
 if __name__ == "__main__":
