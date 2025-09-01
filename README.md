@@ -50,6 +50,6 @@ make docker-compose-up
 
 #### Archivos editados
 
-- mi-generador.py.
-- docker-compose-dev.yaml.
-- client/Dockerfile.
+- mi-generador.py
+- docker-compose-dev.yaml
+- client/Dockerfile
