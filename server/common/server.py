@@ -47,27 +47,49 @@ class Server:
     # Función que maneja la comunicación con un cliente específico.
     def __handle_client_connection(self, client_sock):
         """
-        Lee el mensaje de un socket de cliente específico y lo cierra.
-        Si surge un problema en la comunicación con el cliente, el socket del
-        cliente también se cerrará.
+        Procesa múltiples mensajes en la misma conexión.
+        - Por cada apuesta válida: persiste y envía ACK.
+        - Si recibe FINISH: loguea el total del batch y finaliza.
         """
-
+        cantidad_batch = 0
+    
         try:
-            contador_bet = 0
             while True:
-                bets, finish = utils.decode_bets(client_sock, contador_bet)
-                if finish:
-                    utils.acknowledge_bets(client_sock, contador_bet)
-                    logging.info(f'action: apuesta_recibida | result: success | cantidad: {contador_bet}')
+                try:
+                    # Lee un mensaje (length-prefixed).
+                    mensaje = utils.receive_message(client_sock)
+                except ConnectionError as e:
+                    logging.error(f"action: receive_message | result: fail | error: {e}")
                     break
-                
-                utils.store_bets(bets)
-                contador_bet += len(bets)
+    
+                if mensaje == FINISH_MSJ:
+                    # Cierre del batch.
+                    logging.info(f"action: apuesta_recibida | result: success | cantidad: {cantidad_batch}")
+                    logging.info("action: exit | result: success")
+                    break
+    
+                # Decodificar y persistir una apuesta.
+                try:
+                    bet, direccion, raw = utils.decode_bet(client_sock)
+                    logging.info(f"action: receive_message | result: success | ip: {direccion[0]} | msg: {raw}")
+                    utils.store_bets([bet])
+                    logging.info(f"action: apuesta_almacenada | result: success | dni: {bet.document} | numero: {bet.number}")
+                    # ACK por cada apuesta.
+                    utils.acknowledge_bet(client_sock, bet.document, bet.number)
+                    cantidad_batch += 1
+                except ValueError as e:
+                    logging.error(f"action: receive_message | result: fail | error: {e}")
+                    # Mensaje inválido: Continuar con el siguiente.
+                    continue
+    
         except OSError as e:
-            logging.error("action: receive_message | result: fail | error: {e}")
+            logging.error(f"action: receive_message | result: fail | error: {e}")
         finally:
-            client_sock.close()
-            self.client_sockets.remove(client_sock)
+            try:
+                client_sock.close()
+            finally:
+                if client_sock in self.client_sockets:
+                    self.client_sockets.remove(client_sock)
 
     # Función que acepta nuevas conexiones de clientes.
     def __accept_new_connection(self):
