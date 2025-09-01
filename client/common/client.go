@@ -69,7 +69,7 @@ func (c *Client) StartClientLoop(sigChan chan os.Signal) {
 	bets_totales := len(c.bets)
 	contador_bets := 0
 
-// Loop para enviar las apuestas en lotes.
+	// Loop para enviar las apuestas en lotes.
 loop:
 	for i := 0; i < bets_totales; i += c.config.BatchMaxAmount {
 		final := i + c.config.BatchMaxAmount
