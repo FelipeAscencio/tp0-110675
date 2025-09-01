@@ -89,8 +89,9 @@ func main() {
 		log.Criticalf("%s", err)
 	}
 
-	sigChan := make(chan os.Signal, 1)   // Modificación de código para manejar la señal pedida.
-	signal.Notify(sigChan, syscall.SIGTERM)   // Modificación de código para manejar la señal pedida.
+	// Modificación de código para manejar la señal pedida.
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGTERM)
 
 	PrintConfig(v)
 	clientConfig := common.ClientConfig{
@@ -102,5 +103,5 @@ func main() {
 
 	client := common.NewClient(clientConfig)
 
-	client.StartClientLoop(sigChan)   // Modificación de código para manejar la señal pedida.
+	client.StartClientLoop(sigChan)
 }
