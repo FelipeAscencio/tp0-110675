@@ -71,7 +71,7 @@ def receive_message(client_sock):
 
 # Función para enviar mensajes a través de sockets.
 def send_message(client_sock, message):
-    client_sock.send("{}\n".format(message).encode('utf-8'))
+    client_sock.sendall("{}\n".format(message).encode('utf-8')) # Garantizo que no haya 'Short-Write'.
 
 # Función para decodificar una apuesta recibida a través de un socket.
 def decode_bets(client_sock, bet_count):
