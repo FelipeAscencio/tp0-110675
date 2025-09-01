@@ -1,18 +1,28 @@
+// Declaración del paquete common.
 package common
 
+// Importación de los paquetes necesarios.
 import (
 	"net"
 	"os"
 	"strconv"
 	"strings"
 	"time"
-
 	"github.com/op/go-logging"
 )
 
+// Constantes para índices de los campos de la respuesta.
+const (
+	INDEX_DOCUMENTO = 0
+	INDEX_NUMERO = 1
+	DELAY_CONSULTA = 100
+	DELAY_PAUSA = 1000
+)
+
+// Declaración de una variable global para el logger.
 var log = logging.MustGetLogger("log")
 
-// ClientConfig Configuration used by the client
+// Estructura que contiene la configuración del cliente.
 type ClientConfig struct {
 	ID             string
 	ServerAddress  string
@@ -21,26 +31,24 @@ type ClientConfig struct {
 	BatchMaxAmount int
 }
 
-// Client Entity that encapsulates how
+// Estructura que representa al cliente.
 type Client struct {
 	config ClientConfig
 	conn   net.Conn
 	bets   []Bet
 }
 
-// NewClient Initializes a new client receiving the configuration
-// as a parameter
+// Función que crea un nuevo cliente con la configuración dada.
 func NewClient(config ClientConfig, bets []Bet) *Client {
 	client := &Client{
 		config: config,
 		bets:   bets,
 	}
+
 	return client
 }
 
-// CreateClientSocket Initializes client socket. In case of
-// failure, error is printed in stdout/stderr and exit 1
-// is returned
+// Función que crea el socket del cliente y se conecta al servidor.
 func (c *Client) createClientSocket() error {
 	conn, err := net.Dial("tcp", c.config.ServerAddress)
 	if err != nil {
@@ -50,18 +58,18 @@ func (c *Client) createClientSocket() error {
 			err,
 		)
 	}
+
 	c.conn = conn
 	return nil
 }
 
-// StartClientLoop Send messages to the client until some time threshold is met
+// Función que inicia el loop del cliente, enviando mensajes al servidor.
 func (c *Client) StartClientLoop(sigChan chan os.Signal) {
-	// Create the connection the server in every loop iteration. Send an
 	c.createClientSocket()
+	apuestas_totales := len(c.bets)
+	contador_apuestas := 0
 
-	totalBets := len(c.bets)
-	betCount := 0
-
+	// Modificación para la lógica del ejercicio 7.
 	log.Infof("action: comenzar_envio | result: in_progress")
 	err := sendStartBets(c.conn)
 	if err != nil {
@@ -69,21 +77,23 @@ func (c *Client) StartClientLoop(sigChan chan os.Signal) {
 			c.config.ID,
 			err,
 		)
+
 		return
 	}
+
 	log.Infof("action: comenzar_envio | result: success")
 
+// Loop para enviar las apuestas en lotes y luego consultar los ganadores
 loop1:
-	for i := 0; i < totalBets; i += c.config.BatchMaxAmount {
-		end := i + c.config.BatchMaxAmount
-		if end > totalBets {
-			end = totalBets
+	for i := 0; i < apuestas_totales; i += c.config.BatchMaxAmount {
+		final := i + c.config.BatchMaxAmount
+		if final > apuestas_totales {
+			final = apuestas_totales
 		}
 
-		batch := c.bets[i:end]
-		betCount += len(batch)
-
-		err := sendBetBatch(c.conn, batch, betCount)
+		batch := c.bets[i:final]
+		contador_apuestas += len(batch)
+		err := sendBetBatch(c.conn, batch, contador_apuestas)
 		if err != nil {
 			return
 		}
@@ -96,19 +106,19 @@ loop1:
 		}
 	}
 
-	log.Infof("action: apuesta_enviada | result: success | cantidad: %v", betCount)
+	log.Infof("action: apuesta_enviada | result: success | cantidad: %v", contador_apuestas)
 	log.Infof("action: finalizar_envio | result: in_progress")
-
 	err = sendFinishMessage(c.conn)
 	if err != nil {
 		log.Errorf("action: finalizar_envio | result: fail | error: %v",
 			c.config.ID,
 			err,
 		)
+
 		return
 	}
 
-	msg, err := receiveMessage(c.conn)
+	mensaje, err := receiveMessage(c.conn)
 	if err != nil {
 		log.Errorf("action: finalizar_envio | result: fail | error: %v",
 			c.config.ID,
@@ -117,38 +127,36 @@ loop1:
 		return
 	}
 
-	response_count, _ := strconv.Atoi(strings.TrimSpace(msg))
-
-	if response_count != totalBets {
+	contador_respuestas, _ := strconv.Atoi(strings.TrimSpace(mensaje))
+	if contador_respuestas != apuestas_totales {
 		log.Errorf("action: finalizar_envio | result: fail | msg: %v | error: response does not match",
-			msg,
+			mensaje,
 		)
+
 		return
 	}
 
 	log.Infof("action: finalizar_envio | result: success")
 	c.conn.Close()
-
-	sleepMultiplier := 0
+	multiplicador_de_pausa := 0
 	for {
 		select {
 		case <-sigChan:
 			log.Infof("action: shutdown | result: success")
 			return
 		default:
-			log.Infof("action: consulta_ganadores | result: in_progress | attempt: %v", sleepMultiplier)
+			log.Infof("action: consulta_ganadores | result: in_progress | attempt: %v", multiplicador_de_pausa)
 			c.createClientSocket()
-
-			results, err := sendAskForResults(c.conn, c.config.ID)
+			resultados, err := sendAskForResults(c.conn, c.config.ID)
 			if err == nil {
-				log.Infof("action: consulta_ganadores | result: success | cant_ganadores: %v", len(results))
+				log.Infof("action: consulta_ganadores | result: success | cant_ganadores: %v", len(resultados))
 				c.conn.Close()
-				time.Sleep(100 * time.Millisecond)
+				time.Sleep(DELAY_CONSULTA * time.Millisecond)
 				return
 			} else {
 				c.conn.Close()
-				sleepMultiplier++
-				time.Sleep(time.Duration(sleepMultiplier*1000) * time.Millisecond)
+				multiplicador_de_pausa++
+				time.Sleep(time.Duration(multiplicador_de_pausa*DELAY_PAUSA) * time.Millisecond)
 			}
 		}
 	}
