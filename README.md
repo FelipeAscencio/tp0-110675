@@ -60,4 +60,4 @@ action: test_echo_server | result: success
 
 #### Archivos creados
 
-- validar-echo-server.sh.
+- validar-echo-server.sh
