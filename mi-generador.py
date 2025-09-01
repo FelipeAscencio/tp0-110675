@@ -6,30 +6,31 @@ INDICE_NOMBRE_ARCHIVO = 1
 INDICE_CANT_CLIENTES = 2
 
 # Metadatos del stack.
-PROJECT_NAME         = "tp0"
-SERVICE_SERVER_NAME  = "server"
-SERVICE_CLIENT_PREF  = "client"
-NETWORK_NAME         = "testing_net"
+PROJECT_NAME = "tp0"
+SERVICE_SERVER_NAME = "server"
+SERVICE_CLIENT_PREF = "client"
+NETWORK_NAME = "testing_net"
 
 # Imágenes / entrypoints.
-SERVER_IMAGE         = "server:latest"
-CLIENT_IMAGE         = "client:latest"
-SERVER_ENTRYPOINT    = "python3 /main.py"
-CLIENT_ENTRYPOINT    = "/client"
+SERVER_IMAGE = "server:latest"
+CLIENT_IMAGE = "client:latest"
+SERVER_ENTRYPOINT = "python3 /main.py"
+CLIENT_ENTRYPOINT = "/client"
 
 # Variables de entorno.
-ENV_PYTHON_UNBUF_KV  = "PYTHONUNBUFFERED=1"
-ENV_CLIENTS_KEY      = "CLIENTS"
-ENV_CLI_ID_KEY       = "CLI_ID"
+ENV_PYTHON_UNBUF_KV = "PYTHONUNBUFFERED=1"
+ENV_CLIENTS_KEY = "CLIENTS"
+ENV_CLI_ID_KEY = "CLI_ID"
 
 # Volúmenes.
-SERVER_CONFIG_VOL    = "./server/config.ini:/config.ini"
-CLIENT_CONFIG_VOL    = "./client/config.yaml:/config.yaml"
+SERVER_CONFIG_VOL = "./server/config.ini:/config.ini"
+CLIENT_CONFIG_VOL = "./client/config.yaml:/config.yaml"
 CLIENT_AGENCY_VOL_TMPL = "./.data/agency-{i}.csv:/agency.csv"
 
 # Red.
-NETWORK_DRIVER       = "default"
-NETWORK_SUBNET       = "172.25.125.0/24"
+NETWORK_DRIVER = "default"
+NETWORK_SUBNET = "172.25.125.0/24"
+
 
 # Función para generar el archivo docker-compose.
 def generar_archivo(nombre_archivo, clientes):
@@ -80,6 +81,7 @@ def generar_archivo(nombre_archivo, clientes):
         f.write(compose)
 
     print(f"Archivo {nombre_archivo} generado con {clientes} clientes.")
+
 
 # Punto de entrada del script.
 if __name__ == "__main__":
