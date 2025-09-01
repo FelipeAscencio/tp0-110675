@@ -67,7 +67,7 @@ def load_bets() -> list[Bet]:
 def receive_message(client_sock):
     tamanio = int.from_bytes(client_sock.recv(TAMANIO_HEADER), byteorder='big')
     informacion = b""
-    while len(informacion) < tamanio:
+    while len(informacion) < tamanio: # Garantiza que no tengamos un 'Short-Read'.
         paquete = client_sock.recv(tamanio - len(informacion))
         if not paquete:
             raise ConnectionError("Connection closed unexpectedly")
@@ -90,4 +90,4 @@ def decode_bet(client_sock):
 
 # Función para enviar el acuse de recibo de una apuesta a través de un socket.
 def acknowledge_bet(client_sock, document, number):
-    client_sock.send("{},{}\n".format(document,number).encode('utf-8'))
+    client_sock.sendall(f"{document},{number}\n".encode('utf-8')) # Garantiza que no tenemos 'Short-write'.

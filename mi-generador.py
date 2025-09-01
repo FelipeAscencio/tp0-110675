@@ -33,7 +33,7 @@ NETWORK_SUBNET          = "172.25.125.0/24"
 CLIENT_CONFIG           = "./client/config.yaml:/config.yaml"
 
 # Función para generar el archivo docker-compose.
-def generate_file(filename, clients):
+def generar_archivo(nombre_archivo, clientes):
     compose = f"""name: {PROJECT_NAME}
 services:
   {SERVER_NAME}:
@@ -48,7 +48,7 @@ services:
       - {SERVER_CONFIG}
 """
     
-    for i in range(1, clients + 1):
+    for i in range(1, clientes + 1):
         compose += f"""
   {CLIENT_PREFIX}{i}:
     container_name: {CLIENT_PREFIX}{i}
@@ -78,13 +78,13 @@ networks:
         - subnet: {NETWORK_SUBNET}
 """
     
-    with open(filename, "w") as f:
+    with open(nombre_archivo, "w") as f:
         f.write(compose)
 
-    print(f"Archivo {filename} generado con {clients} clientes.")
+    print(f"Archivo {nombre_archivo} generado con {clientes} clientes.")
 
 # Punto de entrada del script.
 if __name__ == "__main__":
-    filename = sys.argv[INDICE_NOMBRE_ARCHIVO]
-    clients = int(sys.argv[INDICE_CANT_CLIENTES])
-    generate_file(filename, clients)
+    nombre_archivo = sys.argv[INDICE_NOMBRE_ARCHIVO]
+    clientes = int(sys.argv[INDICE_CANT_CLIENTES])
+    generar_archivo(nombre_archivo, clientes)

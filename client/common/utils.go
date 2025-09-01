@@ -29,6 +29,21 @@ type Bet struct {
 	Number    string
 }
 
+// Función que escribe todos los bytes en el socket (Garantiza que no tenemos 'Short-write').
+func writeAll(conn net.Conn, buf []byte) error {
+	total := 0
+	for total < len(buf) {
+		n, err := conn.Write(buf[total:])
+		if err != nil {
+			return err
+		}
+
+		total += n
+	}
+
+	return nil
+}
+
 // Función que envía un mensaje al servidor a través del socket.
 // Controlando el largo del mensaje.
 func sendMessage(conn net.Conn, message string) error {
@@ -42,14 +57,12 @@ func sendMessage(conn net.Conn, message string) error {
 	tamanio_mensaje := uint16(largo_mensaje)
 	sizeBuffer := make([]byte, TAMANIO_BYTES)
 	binary.BigEndian.PutUint16(sizeBuffer, tamanio_mensaje)
-	_, err := conn.Write(sizeBuffer)
-	if err != nil {
+	if err := writeAll(conn, sizeBuffer); err != nil {
 		log.Errorf("action: send_message | result: fail | error: %v", err)
 		return err
 	}
 
-	_, err = conn.Write(bytes_mensaje)
-	if err != nil {
+	if err := writeAll(conn, bytes_mensaje); err != nil {
 		log.Errorf("action: send_message | result: fail | error: %v", err)
 		return err
 	}
@@ -58,10 +71,10 @@ func sendMessage(conn net.Conn, message string) error {
 }
 
 // Función que recibe un mensaje del servidor a través del socket.
+// Controlando el largo del mensaje para garantizar que no ocurre un 'Short-Read'.
 func receiveMessage(conn net.Conn) (string, error) {
 	msg, err := bufio.NewReader(conn).ReadString('\n')
 	msg = strings.TrimSpace(msg)
-
 	return msg, err
 }
 
