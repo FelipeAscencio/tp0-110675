@@ -1,79 +1,104 @@
-package common
+import csv
+import datetime
+import time
+import logging
 
-import (
-	"bufio"
-	"encoding/binary"
-	"errors"
-	"fmt"
-	"net"
-	"strings"
-)
 
-type Bet struct {
-	AgencyId  string
-	Name      string
-	LastName  string
-	Document  string
-	BirthDate string
-	Number    string
-}
+""" Bets storage location. """
+STORAGE_FILEPATH = "./bets.csv"
+""" Simulated winner number in the lottery contest. """
+LOTTERY_WINNER_NUMBER = 7574
 
-func sendMessage(conn net.Conn, message string) error {
-	messageBytes := []byte(message)
-	messageLenght := len(message)
-	if messageLenght > 8192 {
-		log.Error("action: send_message | result: fail | error: message exceeds 8kb")
-		return errors.New("message exceeds 8kb")
-	}
 
-	messageSize := uint16(messageLenght)
+""" A lottery bet registry. """
+class Bet:
+    def __init__(self, agency: str, first_name: str, last_name: str, document: str, birthdate: str, number: str):
+        """
+        agency must be passed with integer format.
+        birthdate must be passed with format: 'YYYY-MM-DD'.
+        number must be passed with integer format.
+        """
+        self.agency = int(agency)
+        self.first_name = first_name
+        self.last_name = last_name
+        self.document = document
+        self.birthdate = datetime.date.fromisoformat(birthdate)
+        self.number = int(number)
 
-	sizeBuffer := make([]byte, 2)
-	binary.BigEndian.PutUint16(sizeBuffer, messageSize)
+""" Checks whether a bet won the prize or not. """
+def has_won(bet: Bet) -> bool:
+    return bet.number == LOTTERY_WINNER_NUMBER
 
-	_, err := conn.Write(sizeBuffer)
-	if err != nil {
-		log.Errorf("action: send_message | result: fail | error: %v", err)
-		return err
-	}
+"""
+Persist the information of each bet in the STORAGE_FILEPATH file.
+Not thread-safe/process-safe.
+"""
+def store_bets(bets: list[Bet]) -> None:
+    with open(STORAGE_FILEPATH, 'a+') as file:
+        writer = csv.writer(file, quoting=csv.QUOTE_MINIMAL)
+        for bet in bets:
+            writer.writerow([bet.agency, bet.first_name, bet.last_name,
+                             bet.document, bet.birthdate, bet.number])
 
-	_, err = conn.Write(messageBytes)
-	if err != nil {
-		log.Errorf("action: send_message | result: fail | error: %v", err)
-		return err
-	}
+"""
+Loads the information all the bets in the STORAGE_FILEPATH file.
+Not thread-safe/process-safe.
+"""
+def load_bets() -> list[Bet]:
+    with open(STORAGE_FILEPATH, 'r') as file:
+        reader = csv.reader(file, quoting=csv.QUOTE_MINIMAL)
+        for row in reader:
+            yield Bet(row[0], row[1], row[2], row[3], row[4], row[5])
 
-	return nil
-}
+"""
+Receives a message from a client socket.
+"""
+def receive_message(client_sock):
+    size = int.from_bytes(client_sock.recv(2), byteorder='big')
 
-func receiveMessage(conn net.Conn) (string, error) {
-	msg, err := bufio.NewReader(conn).ReadString('\n')
-	msg = strings.TrimSpace(msg)
+    data = b""
+    while len(data) < size:
+        packet = client_sock.recv(size - len(data))
+        if not packet:
+            raise ConnectionError("Connection closed unexpectedly")
+        data += packet
+    
+    msg = data.decode('utf-8').strip()
 
-	return msg, err
-}
+    return msg
 
-func sendBetBatch(conn net.Conn, batch []Bet, betCount int) error {
-	bets_str := make([]string, 0, len(batch))
+"""
+Sends a message to a client socket.
+"""
+def send_message(client_sock, message):
+    client_sock.send("{}\n".format(message).encode('utf-8'))
 
-	for _, bet := range batch {
-		bet_str := fmt.Sprintf(
-			"%s,%s,%s,%s,%s,%s",
-			bet.AgencyId,
-			bet.Name,
-			bet.LastName,
-			bet.Document,
-			bet.BirthDate,
-			bet.Number,
-		)
-		bets_str = append(bets_str, bet_str)
-	}
+"""
+Decodes a bet from a client socket.
+"""
+def decode_bets(client_sock, bet_count):
+    msg = receive_message(client_sock)
 
-	message := strings.Join(bets_str, ";")
+    if msg == "FINISH":
+        return None, True
+    
+    decoded_bets = []
 
-	return sendMessage(conn, message)
-}
+    bets = msg.split(';')
 
-func sendFinishMessage(conn net.Conn) error {
-	return sendMessage(conn, "FINISH")
-}
+    for bet in bets:
+        bet_data = bet.split(',')
+        if len(bet_data) != 6:
+            logging.error(f"action: apuesta_recibida | result: fail | cantidad: {bet_count} | msg: {msg} | error: Invalid bet data")
+            raise ValueError("Invalid bet data")
+    
+        decoded_bet = Bet(bet_data[0], bet_data[1], bet_data[2], bet_data[3], bet_data[4], bet_data[5])
+        decoded_bets.append(decoded_bet)
+
+    return decoded_bets, False
+
+"""
+Acknowledges that all the bets have been received to a client socket.
+"""
+def acknowledge_bets(client_sock, bet_count):
+    send_message(client_sock, bet_count)
