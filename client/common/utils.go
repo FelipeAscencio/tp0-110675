@@ -1,7 +1,5 @@
-// Declaración del paquete common.
 package common
 
-// Importación de los paquetes necesarios.
 import (
 	"bufio"
 	"encoding/binary"
@@ -11,14 +9,6 @@ import (
 	"strings"
 )
 
-// Constantes de configuración del protocolo
-const (
-	MAX_TAMANIO_MENSAJE = 8192   // Máximo tamaño del mensaje (8 KB)
-	TAMANIO_BYTES       = 2      // Cantidad de bytes reservados para representar el tamaño
-	FINISH_MSJ          = "FINISH" // Mensaje de finalización
-)
-
-// Estructura que representa una apuesta.
 type Bet struct {
 	AgencyId  string
 	Name      string
@@ -28,26 +18,26 @@ type Bet struct {
 	Number    string
 }
 
-// Función que envía un mensaje al servidor a través del socket.
-// Controlando el largo del mensaje y el correcto uso del 'Socket'.
 func sendMessage(conn net.Conn, message string) error {
-	bytes_mensaje := []byte(message)
-	largo_mensaje := len(message)
-	if largo_mensaje > MAX_TAMANIO_MENSAJE {
-		log.Error("action: send_message | result: fail | error: message exceeds 8kb") // Limitación de tamaño pedida por default.
+	messageBytes := []byte(message)
+	messageLenght := len(message)
+	if messageLenght > 8192 {
+		log.Error("action: send_message | result: fail | error: message exceeds 8kb")
 		return errors.New("message exceeds 8kb")
 	}
 
-	tamanio_mensaje := uint16(largo_mensaje)
-	tamanio_buffer := make([]byte, TAMANIO_BYTES)
-	binary.BigEndian.PutUint16(tamanio_buffer, tamanio_mensaje)
-	_, err := conn.Write(tamanio_buffer)
+	messageSize := uint16(messageLenght)
+
+	sizeBuffer := make([]byte, 2)
+	binary.BigEndian.PutUint16(sizeBuffer, messageSize)
+
+	_, err := conn.Write(sizeBuffer)
 	if err != nil {
 		log.Errorf("action: send_message | result: fail | error: %v", err)
 		return err
 	}
 
-	_, err = conn.Write(bytes_mensaje)
+	_, err = conn.Write(messageBytes)
 	if err != nil {
 		log.Errorf("action: send_message | result: fail | error: %v", err)
 		return err
@@ -56,17 +46,16 @@ func sendMessage(conn net.Conn, message string) error {
 	return nil
 }
 
-// Función que recibe un mensaje del servidor a través del socket.
-// Controlando el largo del mensaje para garantizar que no ocurre un 'Short-Read'.
 func receiveMessage(conn net.Conn) (string, error) {
-	mensaje, err := bufio.NewReader(conn).ReadString('\n')
-	mensaje = strings.TrimSpace(mensaje)
-	return mensaje, err
+	msg, err := bufio.NewReader(conn).ReadString('\n')
+	msg = strings.TrimSpace(msg)
+
+	return msg, err
 }
 
-// Función que envía un batch de apuestas al servidor a través del socket.
 func sendBetBatch(conn net.Conn, batch []Bet, betCount int) error {
 	bets_str := make([]string, 0, len(batch))
+
 	for _, bet := range batch {
 		bet_str := fmt.Sprintf(
 			"%s,%s,%s,%s,%s,%s",
@@ -77,15 +66,44 @@ func sendBetBatch(conn net.Conn, batch []Bet, betCount int) error {
 			bet.BirthDate,
 			bet.Number,
 		)
-
 		bets_str = append(bets_str, bet_str)
 	}
 
-	mensaje := strings.Join(bets_str, ";")
-	return sendMessage(conn, mensaje)
+	message := strings.Join(bets_str, ";")
+
+	return sendMessage(conn, message)
 }
 
-//  Función que envía el mensaje de final de transmisión.
 func sendFinishMessage(conn net.Conn) error {
-	return sendMessage(conn, FINISH_MSJ)
+	return sendMessage(conn, "FINISH")
+}
+
+func sendStartBets(conn net.Conn) error {
+	return sendMessage(conn, "BET")
+}
+
+func sendAskForResults(conn net.Conn, agencyId string) ([]string, error) {
+	message1 := "RESULTS"
+	message2 := agencyId
+
+	err := sendMessage(conn, message1)
+	if err != nil {
+		return nil, err
+	}
+
+	err = sendMessage(conn, message2)
+	if err != nil {
+		return nil, err
+	}
+
+	msg, err := receiveMessage(conn)
+	if err != nil {
+		return nil, err
+	}
+
+	if msg == "NOWINNERS" {
+		return []string{}, nil
+	}
+
+	return strings.Split(msg, ","), nil
 }
