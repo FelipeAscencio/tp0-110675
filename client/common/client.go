@@ -1,18 +1,26 @@
+// Declaración del paquete common.
 package common
 
+// Importación de los paquetes necesarios.
 import (
 	"net"
 	"os"
-	"strconv"
-	"strings"
+	"strconv"   // Modificación de código para el ejercicio 5.
+	"strings"   // Modificación de código para el ejercicio 5.
 	"time"
-
 	"github.com/op/go-logging"
 )
 
+// Constantes para índices de los campos de la respuesta.
+const (
+	INDEX_DOCUMENTO = 0
+	INDEX_NUMERO   = 1
+)
+
+// Declaración de una variable global para el logger.
 var log = logging.MustGetLogger("log")
 
-// ClientConfig Configuration used by the client
+// Estructura que contiene la configuración del cliente.
 type ClientConfig struct {
 	ID            string
 	ServerAddress string
@@ -20,26 +28,24 @@ type ClientConfig struct {
 	LoopPeriod    time.Duration
 }
 
-// Client Entity that encapsulates how
+// Estructura que representa al cliente.
 type Client struct {
 	config ClientConfig
 	conn   net.Conn
 	bet    Bet
 }
 
-// NewClient Initializes a new client receiving the configuration
-// as a parameter
+// Función que crea un nuevo cliente con la configuración dada.
 func NewClient(config ClientConfig, bet Bet) *Client {
 	client := &Client{
 		config: config,
 		bet:    bet,
 	}
+
 	return client
 }
 
-// CreateClientSocket Initializes client socket. In case of
-// failure, error is printed in stdout/stderr and exit 1
-// is returned
+// Función que crea el socket del cliente y se conecta al servidor.
 func (c *Client) createClientSocket() error {
 	conn, err := net.Dial("tcp", c.config.ServerAddress)
 	if err != nil {
@@ -49,44 +55,43 @@ func (c *Client) createClientSocket() error {
 			err,
 		)
 	}
+
 	c.conn = conn
 	return nil
 }
 
-// StartClientLoop Send messages to the client until some time threshold is met
+// Función que inicia el loop del cliente, enviando mensajes al servidor.
 func (c *Client) StartClientLoop(sigChan chan os.Signal) {
-	// There is an autoincremental msgID to identify every message sent
-	// Messages if the message amount threshold has not been surpassed
 	select {
 	case <-sigChan:
 		log.Infof("action: shutdown | result: success")
 		return
 	default:
 
-		// Create the connection the server in every loop iteration. Send an
+		// Modificación de código para el ejercicio 5.
 		c.createClientSocket()
-
 		err := sendBet(c.conn, c.bet)
 		if err != nil {
 			return
 		}
 
-		msg, err := receiveMessage(c.conn)
+		mensaje, err := receiveMessage(c.conn)
 		if err != nil {
 			log.Errorf("action: finalizar_envio | result: fail | error: %v",
 				c.config.ID,
 				err,
 			)
+
 			return
 		}
-		c.conn.Close()
 
-		response_data := strings.Split(msg, ",")
-		rsp_doc, _ := strconv.Atoi(strings.TrimSpace(response_data[0]))
-		rsp_num, _ := strconv.Atoi(strings.TrimSpace(response_data[1]))
-		bet_doc, _ := strconv.Atoi(strings.TrimSpace(c.bet.Document))
-		bet_num, _ := strconv.Atoi(strings.TrimSpace(c.bet.Number))
-		if rsp_doc == bet_doc && rsp_num == bet_num {
+		c.conn.Close()
+		informacion_respuesta := strings.Split(mensaje, ",")
+		doc_apuesta, _ := strconv.Atoi(strings.TrimSpace(c.bet.Document))
+		numero_apuesta, _ := strconv.Atoi(strings.TrimSpace(c.bet.Number))
+		doc_respuesta, _ := strconv.Atoi(strings.TrimSpace(informacion_respuesta[INDEX_DOCUMENTO]))
+		numero_respuesta, _ := strconv.Atoi(strings.TrimSpace(informacion_respuesta[INDEX_NUMERO]))
+		if doc_respuesta == doc_apuesta && numero_respuesta == numero_apuesta {
 			log.Infof("action: apuesta_enviada | result: success | dni: %v | numero: %v", c.bet.Document, c.bet.Number)
 		} else {
 			log.Errorf("action: apuesta_enviada | result: fail | dni: %v | numero: %v", c.bet.Document, c.bet.Number)

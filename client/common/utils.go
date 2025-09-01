@@ -1,5 +1,9 @@
+// Todo este archivo es generado para el ejercicio 5.
+
+// Declaración del paquete common.
 package common
 
+// Importación de los paquetes necesarios.
 import (
 	"bufio"
 	"encoding/binary"
@@ -9,6 +13,13 @@ import (
 	"strings"
 )
 
+// Constantes de configuración del protocolo
+const (
+	MAX_TAMANIO_MENSAJE = 8192 // Máximo tamaño del mensaje (8 KB),
+	TAMANIO_BYTES       = 2    // Cantidad de bytes reservados para representar el tamaño,
+)
+
+// Estructura que representa una apuesta.
 type Bet struct {
 	AgencyId  string
 	Name      string
@@ -18,26 +29,26 @@ type Bet struct {
 	Number    string
 }
 
+// Función que envía un mensaje al servidor a través del socket.
+// Controlando el largo del mensaje.
 func sendMessage(conn net.Conn, message string) error {
-	messageBytes := []byte(message)
-	messageLenght := len(message)
-	if messageLenght > 8192 {
+	bytes_mensaje := []byte(message)
+	largo_mensaje := len(message)
+	if largo_mensaje > MAX_TAMANIO_MENSAJE {
 		log.Error("action: send_message | result: fail | error: message exceeds 8kb")
 		return errors.New("message exceeds 8kb")
 	}
 
-	messageSize := uint16(messageLenght)
-
-	sizeBuffer := make([]byte, 2)
-	binary.BigEndian.PutUint16(sizeBuffer, messageSize)
-
+	tamanio_mensaje := uint16(largo_mensaje)
+	sizeBuffer := make([]byte, TAMANIO_BYTES)
+	binary.BigEndian.PutUint16(sizeBuffer, tamanio_mensaje)
 	_, err := conn.Write(sizeBuffer)
 	if err != nil {
 		log.Errorf("action: send_message | result: fail | error: %v", err)
 		return err
 	}
 
-	_, err = conn.Write(messageBytes)
+	_, err = conn.Write(bytes_mensaje)
 	if err != nil {
 		log.Errorf("action: send_message | result: fail | error: %v", err)
 		return err
@@ -46,6 +57,7 @@ func sendMessage(conn net.Conn, message string) error {
 	return nil
 }
 
+// Función que recibe un mensaje del servidor a través del socket.
 func receiveMessage(conn net.Conn) (string, error) {
 	msg, err := bufio.NewReader(conn).ReadString('\n')
 	msg = strings.TrimSpace(msg)
@@ -53,6 +65,7 @@ func receiveMessage(conn net.Conn) (string, error) {
 	return msg, err
 }
 
+// Función que envía una apuesta al servidor a través del socket.
 func sendBet(conn net.Conn, bet Bet) error {
 	message := fmt.Sprintf(
 		"%s,%s,%s,%s,%s,%s\n",
