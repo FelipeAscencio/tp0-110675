@@ -17,7 +17,7 @@ class Server:
         self._server_socket.bind(("", port))
         self._server_socket.listen(listen_backlog)
         self.running = False
-        self.clients = clients  # Modificación de código para implementar la lógica del ejercicio 7.
+        self.clients = clients  # Modificación de código para implementar ejercicio 7.
         self.client_sockets = []
         self.finished_clients = (
             0  # Modificación de código para implementar la lógica del ejercicio 7.
@@ -31,7 +31,8 @@ class Server:
         """
         Bucle de servidor ficticio.
         El servidor acepta nuevas conexiones y establece comunicación con un cliente.
-        Una vez finalizada la comunicación con el cliente, el servidor vuelve a aceptar nuevas conexiones.
+        Una vez finalizada la comunicación con el cliente, el servidor vuelve
+        a aceptar nuevas conexiones.
         """
 
         self.running = True
@@ -74,8 +75,10 @@ class Server:
                     if termino:
                         utils.acknowledge_bets(client_sock, bet_count)
                         logging.info(
-                            f"action: apuesta_recibida | result: success | cantidad: {bet_count}"
+                            f"action: apuesta_recibida | result: success | "
+                            f"cantidad: {bet_count}"
                         )
+                        
                         self.finished_clients += 1
                         break
 
