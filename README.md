@@ -26,4 +26,13 @@ make docker-compose-up
 
 ### Archivos modificados
 
-X.
+#### Archivos editados
+
+- docker-compose-dev.yaml
+- mi-generador.py
+- client/config.yaml
+- client/common/client.go
+- client/common/utils.go
+- server/main.py
+- server/common/server.py
+- server/common/utils.py
