@@ -32,55 +32,55 @@ NETWORK_NAME            = "testing_net"
 NETWORK_DRIVER          = "default"
 NETWORK_SUBNET          = "172.25.125.0/24"
 
-# Función para generar el archivo docker-compose.
-def generar_archivo(nombre_archivo, clientes):
-    compose = f"""name: {PROJECT_NAME}
+def generate_file(filename, clients):
+    compose = f"""name: tp0
 services:
-  {SERVER_NAME}:
-    container_name: {SERVER_NAME}
-    image: {SERVER_IMAGE}
-    entrypoint: {SERVER_ENTRYPOINT}
+  server:
+    container_name: server
+    image: server:latest
+    entrypoint: python3 /main.py
     environment:
-    - {ENV_PYTHON_UNBUFFERED}
-    - CLIENTS={clientes}
+    - PYTHONUNBUFFERED=1
+    - CLIENTS={clients}
     networks:
-    - {NETWORK_NAME}
+    - testing_net
     volumes:
-      - {SERVER_CONFIG}
+      - ./server/config.ini:/config.ini
 """
     
-    for i in range(1, clientes + 1):
+    for i in range(1, clients + 1):
         compose += f"""
-  {CLIENT_PREFIX}{i}:
-    container_name: {CLIENT_PREFIX}{i}
-    image: {CLIENT_IMAGE}
-    entrypoint: {CLIENT_ENTRYPOINT}
+  client{i}:
+    container_name: client{i}
+    image: client:latest
+    entrypoint: /client
     environment:
-      - {ENV_CLI_ID}={i}
+      - CLI_ID={i}
     networks:
-      - {NETWORK_NAME}
+      - testing_net
     volumes:
-      - {CLIENT_CONFIG}
+      - ./client/config.yaml:/config.yaml
       - ./.data/agency-{i}.csv:/agency.csv
     depends_on:
-      - {SERVER_NAME}
+      - server
 """
     
     compose += """
 networks:
-  {NETWORK_NAME}:
+  testing_net:
     ipam:
-      driver: {NETWORK_DRIVER}
+      driver: default
       config:
-        - subnet: {NETWORK_SUBNET}
+        - subnet: 172.25.125.0/24
 """
     
-    with open(nombre_archivo, "w") as f:
+    with open(filename, "w") as f:
         f.write(compose)
     
-    print(f"Archivo {nombre_archivo} generado con {clientes} clientes.")
+    print(f"Archivo {filename} generado con {clients} clientes.")
 
 if __name__ == "__main__":
-    nombre_archivo = sys.argv[INDICE_NOMBRE_ARCHIVO]
-    clientes = int(sys.argv[INDICE_CANT_CLIENTES])
-    generar_archivo(nombre_archivo, clientes)
+    filename = sys.argv[1]
+    clients = int(sys.argv[2])
+    
+    generate_file(filename, clients)

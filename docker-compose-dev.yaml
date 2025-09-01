@@ -83,8 +83,8 @@ services:
       - server
 
 networks:
-  testing_net:
+  {NETWORK_NAME}:
     ipam:
-      driver: default
+      driver: {NETWORK_DRIVER}
       config:
-        - subnet: 172.25.125.0/24
+        - subnet: {NETWORK_SUBNET}
