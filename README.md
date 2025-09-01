@@ -60,5 +60,5 @@ make docker-compose-up
 
 #### Archivos creados
 
-- generar-compose.sh.
-- mi-generador.py.
+- generar-compose.sh
+- mi-generador.py
