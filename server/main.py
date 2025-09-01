@@ -66,7 +66,8 @@ def main():
     listen_backlog = config_params["listen_backlog"]
     initialize_log(logging_level)
 
-    # Registrar los parámetros de configuración al inicio del programa para verificar la configuración del componente.
+    # Registrar los parámetros de configuración al inicio del programa
+    # para verificar la configuración del componente. 
     logging.debug(
         f"action: config | result: success | port: {port} | "
         f"listen_backlog: {listen_backlog} | logging_level: {logging_level}"

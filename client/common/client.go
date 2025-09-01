@@ -60,8 +60,8 @@ func (c *Client) StartClientLoop(sigChan chan os.Signal) {   // Modificación de
 			log.Infof("action: shutdown | result: success")   // Modificación de código para manejar la señal pedida.
 			return   // Modificación de código para manejar la señal pedida.
 		default:   // Modificación de código para manejar la señal pedida.
-			c.createClientSocket()
-			fmt.Fprintf(
+			_ = c.createClientSocket()
+			_, _ = fmt.Fprintf(
 				c.conn,
 				"[CLIENT %v] Message N°%v\n",
 				c.config.ID,
@@ -69,7 +69,7 @@ func (c *Client) StartClientLoop(sigChan chan os.Signal) {   // Modificación de
 			)
 
 			msg, err := bufio.NewReader(c.conn).ReadString('\n')
-			c.conn.Close()
+			_ = c.conn.Close()
 			if err != nil {
 				log.Errorf("action: receive_message | result: fail | client_id: %v | error: %v",
 					c.config.ID,

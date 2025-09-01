@@ -19,7 +19,8 @@ class Server:
         """
         Bucle de servidor ficticio.
         El servidor acepta nuevas conexiones y establece comunicación con un cliente.
-        Una vez finalizada la comunicación con el cliente, el servidor vuelve a aceptar nuevas conexiones.
+        Una vez finalizada la comunicación con el cliente, el servidor vuelve a 
+        aceptar nuevas conexiones.
         """
 
         self.running = True
@@ -34,7 +35,8 @@ class Server:
                 if not self.running:
                     break
 
-    # Función que apaga el servidor de manera ordenada (Modificación de código para manejar la señal pedida).
+    # Función que apaga el servidor de manera ordenada
+    # (Modificación de código para manejar la señal pedida).
     def shutdown(self, signum=None, frame=None):
         self.running = False
         logging.info(f"action: shutdown | result: in_progress")
