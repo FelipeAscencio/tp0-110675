@@ -1,4 +1,3 @@
-// Declaración del paquete common.
 package common
 
 // Archivo generado para la resolución del ejercicio 5.
