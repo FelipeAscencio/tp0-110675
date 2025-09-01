@@ -1,7 +1,8 @@
 # Importación de los paquetes necesarios.
 import socket
 import logging
-import signal   # Modificación de código para manejar la señal pedida.
+import signal
+from common import utils
 
 # Clase que implementa el servidor.
 class Server:
@@ -10,7 +11,7 @@ class Server:
         self._server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._server_socket.bind(('', port))
         self._server_socket.listen(listen_backlog)
-        self.running = False   # Modificación de código para manejar la señal pedida.
+        self.running = False
         self.client_sockets = []
 
     # Loop principal del servidor (Modificación de código para manejar la señal pedida).
@@ -42,7 +43,7 @@ class Server:
 
         for client_socket in self.client_sockets:
             client_socket.close()
-
+        
         logging.info(f'action: shutdown | result: success')
 
     # Función que maneja la comunicación con un cliente específico.
@@ -54,10 +55,11 @@ class Server:
         """
 
         try:
-            msg = client_sock.recv(1024).rstrip().decode('utf-8')
-            addr = client_sock.getpeername()
+            bet, addr, msg = utils.decode_bet(client_sock)
             logging.info(f'action: receive_message | result: success | ip: {addr[0]} | msg: {msg}')
-            client_sock.send("{}\n".format(msg).encode('utf-8'))
+            utils.store_bets([bet]) # Modificación de código para almacenar la apuesta recibida.
+            logging.info(f'action: apuesta_almacenada | result: success | dni: {bet.document} | numero: {bet.number}')
+            utils.acknowledge_bet(client_sock, bet.document, bet.number)
         except OSError as e:
             logging.error("action: receive_message | result: fail | error: {e}")
         finally:

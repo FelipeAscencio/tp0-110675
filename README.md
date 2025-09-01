@@ -19,6 +19,9 @@ X.
 - client/config.yaml
 - client/main.go
 - client/common/client.go
+- server/config.ini
+- server/common/server.py
+- server/common/utils.py
 
 #### Archivos creados
 

@@ -1,14 +1,25 @@
+# Importación de los paquetes necesarios.
 import csv
 import datetime
 import time
 
-
+# Constantes de configuración.
 """ Bets storage location. """
 STORAGE_FILEPATH = "./bets.csv"
 """ Simulated winner number in the lottery contest. """
 LOTTERY_WINNER_NUMBER = 7574
 
+# Constantes de tamaños, indices y límites.
+TAMANIO_HEADER = 2
+CAMPOS_APUESTA_ESPERADA = 6
+INDEX_AGENCIA = 0
+INDEX_NOMBRE = 1
+INDEX_APELLIDO = 2
+INDEX_DOCUMENTO = 3
+INDEX_FECHA_NACIMIENTO = 4
+INDEX_NUMERO = 5
 
+# Clase que representa una apuesta.
 """ A lottery bet registry. """
 class Bet:
     def __init__(self, agency: str, first_name: str, last_name: str, document: str, birthdate: str, number: str):
@@ -49,3 +60,31 @@ def load_bets() -> list[Bet]:
         for row in reader:
             yield Bet(row[0], row[1], row[2], row[3], row[4], row[5])
 
+# Implementación de las funciones de comunicación (Para el ejercicio 5).
+# Funcion para recibir mensajes a través de sockets.
+def receive_message(client_sock):
+    tamanio = int.from_bytes(client_sock.recv(TAMANIO_HEADER), byteorder='big')
+    informacion = b""
+    while len(informacion) < tamanio:
+        paquete = client_sock.recv(tamanio - len(informacion))
+        if not paquete:
+            raise ConnectionError("Connection closed unexpectedly")
+        informacion += paquete
+    mensaje = informacion.decode('utf-8').strip()
+    return mensaje
+
+# Función para decodificar una apuesta recibida a través de un socket.
+def decode_bet(client_sock):
+    mensaje = receive_message(client_sock)
+    direccion = client_sock.getpeername()
+    informacion_apuesta = mensaje.split(',')
+    if len(informacion_apuesta) != CAMPOS_APUESTA_ESPERADA:
+        logging.error(f"action: receive_message | result: fail | ip: {direccion[0]} | msg: {mensaje} | error: Invalid bet data")
+        raise ValueError("Invalid bet data")
+    
+    bet = Bet(informacion_apuesta[INDEX_AGENCIA], informacion_apuesta[INDEX_NOMBRE], informacion_apuesta[INDEX_APELLIDO], informacion_apuesta[INDEX_DOCUMENTO], informacion_apuesta[INDEX_FECHA_NACIMIENTO], informacion_apuesta[INDEX_NUMERO])
+    return bet, direccion, mensaje
+
+# Función para enviar el acuse de recibo de una apuesta a través de un socket.
+def acknowledge_bet(client_sock, document, number):
+    client_sock.send("{},{}\n".format(document,number).encode('utf-8'))
