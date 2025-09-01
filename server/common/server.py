@@ -53,11 +53,16 @@ class Server:
         """
 
         try:
-            bet, direccion, mensaje = utils.decode_bet(client_sock)
-            logging.info(f'action: receive_message | result: success | ip: {direccion[0]} | msg: {mensaje}')
-            utils.store_bets([bet])
-            logging.info(f'action: apuesta_almacenada | result: success | dni: {bet.document} | numero: {bet.number}')
-            utils.acknowledge_bet(client_sock, bet.document, bet.number)
+            contador_bet = 0
+            while True:
+                bets, finish = utils.decode_bets(client_sock, contador_bet)
+                if finish:
+                    utils.acknowledge_bets(client_sock, contador_bet)
+                    logging.info(f'action: apuesta_recibida | result: success | cantidad: {contador_bet}')
+                    break
+                
+                utils.store_bets(bets)
+                contador_bet += len(bets)
         except OSError as e:
             logging.error("action: receive_message | result: fail | error: {e}")
         finally:

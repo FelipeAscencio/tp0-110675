@@ -76,18 +76,29 @@ def receive_message(client_sock):
     mensaje = informacion.decode('utf-8').strip()
     return mensaje
 
+# Función para enviar mensajes a través de sockets.
+def send_message(client_sock, message): #CAMBIAR POR SENDALL SI O SI PARA QUE GARANTICE QUE NO TENEMOS 'SHORT-WRITE'.
+    client_sock.send("{}\n".format(message).encode('utf-8')) # Garantiza que no tenemos 'Short-write'.
+
 # Función para decodificar una apuesta recibida a través de un socket.
 def decode_bet(client_sock):
     mensaje = receive_message(client_sock)
-    direccion = client_sock.getpeername()
-    bet_informacion = mensaje.split(',')
-    if len(bet_informacion) != CAMPOS_APUESTA_ESPERADA:
-        logging.error(f"action: receive_message | result: fail | ip: {direccion[0]} | msg: {mensaje} | error: Invalid bet data")
-        raise ValueError("Invalid bet data")
+    if mensaje == "FINISH":
+        return None, True
     
-    bet = Bet(bet_informacion[INDEX_AGENCIA], bet_informacion[INDEX_NOMBRE], bet_informacion[INDEX_APELLIDO], bet_informacion[INDEX_DOCUMENTO], bet_informacion[INDEX_FECHA_NACIMIENTO], bet_informacion[INDEX_NUMERO])
-    return bet, direccion, mensaje
+    bets_decodificadas = []
+    bets = mensaje.split(';')
+    for bet in bets:
+        bet_informacion = bet.split(',')
+        if len(bet_informacion) != CAMPOS_APUESTA_ESPERADA:
+            logging.error(f"action: apuesta_recibida | result: fail | cantidad: {bet_count} | msg: {mensaje} | error: Invalid bet data")
+            raise ValueError("Invalid bet data")
+    
+        bet_decodificada = Bet(bet_informacion[INDEX_AGENCIA], bet_informacion[INDEX_NOMBRE], bet_informacion[INDEX_APELLIDO], bet_informacion[INDEX_DOCUMENTO], bet_informacion[INDEX_FECHA_NACIMIENTO], bet_informacion[INDEX_NUMERO])
+        bets_decodificadas.append(bet_decodificada)
+
+    return bets_decodificadas, False
 
 # Función para enviar el acuse de recibo de una apuesta a través de un socket.
 def acknowledge_bet(client_sock, document, number):
-    client_sock.sendall(f"{document},{number}\n".encode('utf-8')) # Garantiza que no tenemos 'Short-write'.
+    send_message(client_sock, bet_count)
