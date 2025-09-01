@@ -1,16 +1,17 @@
 # Importación de los paquetes necesarios.
 import socket
 import logging
-import signal   # Modificación de código para manejar la señal pedida.
+import signal  # Modificación de código para manejar la señal pedida.
+
 
 # Clase que implementa el servidor.
 class Server:
     # Constructor del servidor.
     def __init__(self, port, listen_backlog):
         self._server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self._server_socket.bind(('', port))
+        self._server_socket.bind(("", port))
         self._server_socket.listen(listen_backlog)
-        self.running = False   # Modificación de código para manejar la señal pedida.
+        self.running = False  # Modificación de código para manejar la señal pedida.
         self.client_sockets = []
 
     # Loop principal del servidor (Modificación de código para manejar la señal pedida).
@@ -32,18 +33,18 @@ class Server:
             except:
                 if not self.running:
                     break
-    
+
     # Función que apaga el servidor de manera ordenada (Modificación de código para manejar la señal pedida).
     def shutdown(self, signum=None, frame=None):
         self.running = False
-        logging.info(f'action: shutdown | result: in_progress')
+        logging.info(f"action: shutdown | result: in_progress")
         if self._server_socket:
             self._server_socket.close()
 
         for client_socket in self.client_sockets:
             client_socket.close()
 
-        logging.info(f'action: shutdown | result: success')
+        logging.info(f"action: shutdown | result: success")
 
     # Función que maneja la comunicación con un cliente específico.
     def __handle_client_connection(self, client_sock):
@@ -54,10 +55,12 @@ class Server:
         """
 
         try:
-            msg = client_sock.recv(1024).rstrip().decode('utf-8')
+            msg = client_sock.recv(1024).rstrip().decode("utf-8")
             addr = client_sock.getpeername()
-            logging.info(f'action: receive_message | result: success | ip: {addr[0]} | msg: {msg}')
-            client_sock.send("{}\n".format(msg).encode('utf-8'))
+            logging.info(
+                f"action: receive_message | result: success | ip: {addr[0]} | msg: {msg}"
+            )
+            client_sock.send("{}\n".format(msg).encode("utf-8"))
         except OSError as e:
             logging.error("action: receive_message | result: fail | error: {e}")
         finally:
@@ -72,7 +75,7 @@ class Server:
         Después, se imprime y devuelve la conexión creada.
         """
 
-        logging.info('action: accept_connections | result: in_progress')
+        logging.info("action: accept_connections | result: in_progress")
         c, addr = self._server_socket.accept()
-        logging.info(f'action: accept_connections | result: success | ip: {addr[0]}')
+        logging.info(f"action: accept_connections | result: success | ip: {addr[0]}")
         return c
