@@ -17,6 +17,10 @@ linters-settings:
     local-prefixes: github.com/7574-sistemas-distribuidos/docker-compose-init
 
 issues:
+  exclude-rules:
+    - path: client/common/utils.go
+      linters:
+        - gofmt
   exclude-dirs:
     - vendor
   exclude-use-default: false

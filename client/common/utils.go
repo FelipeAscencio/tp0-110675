@@ -1,8 +1,6 @@
-//nolint:gofmt // Linter ignorado por problemas de formato en este archivo en la línea 1.
-// Se garantiza que el resto del archivo cumple con los estándares de Linter.
+// Archivo generado para la resolución del ejercicio 5.
 package common
 
-// Archivo generado para la resolución del ejercicio 5.
 // Importación de los paquetes necesarios.
 import (
 	"bufio"
