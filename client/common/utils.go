@@ -13,9 +13,9 @@ import (
 
 // Constantes de configuración del protocolo
 const (
-	MAX_TAMANIO_MENSAJE = 8192   // Máximo tamaño del mensaje (8 KB),
-	TAMANIO_BYTES = 2  // Cantidad de bytes reservados para representar el tamaño,
-	const FINISH_MSJ = "FINISH"   // Mensaje de finalización.
+	MAX_TAMANIO_MENSAJE = 8192   // Máximo tamaño del mensaje (8 KB)
+	TAMANIO_BYTES       = 2      // Cantidad de bytes reservados para representar el tamaño
+	FINISH_MSJ          = "FINISH" // Mensaje de finalización
 )
 
 // Estructura que representa una apuesta.
