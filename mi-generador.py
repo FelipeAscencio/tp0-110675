@@ -13,11 +13,11 @@ SERVER_NAME             = "server"
 SERVER_IMAGE            = "server:latest"
 SERVER_ENTRYPOINT       = "python3 /main.py"
 ENV_PYTHON_UNBUFFERED   = "PYTHONUNBUFFERED=1"
-CLIENT_PREFIX           = "client"
 SERVER_CONFIG           = "./server/config.ini:/config.ini"
 
 # Servicio Cliente.
 CLIENT_IMAGE            = "client:latest"
+CLIENT_PREFIX           = "client"
 CLIENT_ENTRYPOINT       = "/client"
 ENV_CLI_ID              = "CLI_ID"
 CLIENT_NOMBRE           = "Santiago Lionel"
@@ -25,12 +25,12 @@ CLIENT_APELLIDO         = "Lorca"
 CLIENT_DOCUMENTO        = "30904465"
 CLIENT_NACIMIENTO       = "1999-03-17"
 CLIENT_NUMERO           = "7574"
+CLIENT_CONFIG           = "./client/config.yaml:/config.yaml"
 
 # Red.
 NETWORK_NAME            = "testing_net"
 NETWORK_DRIVER          = "default"
 NETWORK_SUBNET          = "172.25.125.0/24"
-CLIENT_CONFIG           = "./client/config.yaml:/config.yaml"
 
 # Función para generar el archivo docker-compose.
 def generar_archivo(nombre_archivo, clientes):
@@ -56,15 +56,11 @@ services:
     entrypoint: {CLIENT_ENTRYPOINT}
     environment:
       - {ENV_CLI_ID}={i}
-      - NOMBRE={CLIENT_NOMBRE}
-      - APELLIDO={CLIENT_APELLIDO}
-      - DOCUMENTO={CLIENT_DOCUMENTO}
-      - NACIMIENTO={CLIENT_NACIMIENTO}
-      - NUMERO={CLIENT_NUMERO}
     networks:
       - {NETWORK_NAME}
     volumes:
       - {CLIENT_CONFIG}
+      - ./.data/agency-{i}.csv:/agency.csv
     depends_on:
       - {SERVER_NAME}
 """

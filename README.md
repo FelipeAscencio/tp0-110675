@@ -20,10 +20,19 @@ X.
 
 ```bash
 
-make docker-compose-up
+make docker-compose-up  
 
 ```
 
 ### Archivos modificados
 
-X.
+#### Archivos editados
+
+- .gitignore
+- docker-compose-dev.yaml
+- mi-generador.py
+- client/main.go
+- client/common/client.go
+- client/common/utils.go
+- server/common/server.py
+- server/common/utils.py
