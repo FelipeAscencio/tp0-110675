@@ -2,19 +2,7 @@ name: Lint (Go)
 
 on:
   push:
-    paths:
-      - "**/*.go"
-      - "go.mod"
-      - "go.sum"
-      - ".golangci.yml"
-      - ".github/workflows/lint-go.yml"
   pull_request:
-    paths:
-      - "**/*.go"
-      - "go.mod"
-      - "go.sum"
-      - ".golangci.yml"
-      - ".github/workflows/lint-go.yml"
 
 jobs:
   golangci-lint:
@@ -26,7 +14,8 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: "1.17"  # Cambiá si tu go.mod usa otra versión
+          go-version-file: go.mod
+          cache: true
 
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v6
