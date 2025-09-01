@@ -1,4 +1,4 @@
-// Declaración del paquete common (Archivo generado para ej_5).
+// Package common (Archivo generado para ej_5).
 package common
 
 // Importación de los paquetes necesarios.
