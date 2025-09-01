@@ -1,87 +1,102 @@
-// Declaración del paquete main.
 package main
 
-// Importación de los paquetes necesarios.
 import (
 	"fmt"
 	"os"
-	"os/signal"   // Modificación de código para manejar la señal pedida.
+	"os/signal"
 	"strings"
-	"syscall"   // Modificación de código para manejar la señal pedida.
+	"syscall"
 	"time"
+
 	"github.com/op/go-logging"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
+
 	"github.com/7574-sistemas-distribuidos/docker-compose-init/client/common"
 )
 
-// Declaración de una variable global para el logger.
 var log = logging.MustGetLogger("log")
 
-// Carga la configuración de la app usando Viper.
-// Lee primero variables de entorno (con prefijo CLI) y después el archivo config.yaml.
-// Las variables de entorno tienen prioridad. 
-// Valida que loop.period sea un tiempo válido.
-// Devuelve la configuración lista para usar o un error.
+// InitConfig Function that uses viper library to parse configuration parameters.
+// Viper is configured to read variables from both environment variables and the
+// config file ./config.yaml. Environment variables takes precedence over parameters
+// defined in the configuration file. If some of the variables cannot be parsed,
+// an error is returned
 func InitConfig() (*viper.Viper, *common.Bet, error) {
 	v := viper.New()
+
+	// Configure viper to read env variables with the CLI_ prefix
 	v.AutomaticEnv()
 	v.SetEnvPrefix("cli")
+	// Use a replacer to replace env variables underscores with points. This let us
+	// use nested configurations in the config file and at the same time define
+	// env variables for the nested configurations
 	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+
+	// Add env variables supported
 	v.BindEnv("id")
 	v.BindEnv("server", "address")
 	v.BindEnv("loop", "period")
 	v.BindEnv("loop", "amount")
 	v.BindEnv("log", "level")
+
+	// Try to read configuration from config file. If config file
+	// does not exists then ReadInConfig will fail but configuration
+	// can be loaded from the environment variables so we shouldn't
+	// return an error in that case
 	v.SetConfigFile("./config.yaml")
 	if err := v.ReadInConfig(); err != nil {
-		fmt.Printf("No se pudo leer la configuración del archivo de configuración. Se utilizan variables de entorno.")
+		fmt.Printf("Configuration could not be read from config file. Using env variables instead")
 	}
+
+	// Parse time.Duration variables and return an error if those variables cannot be parsed
 
 	if _, err := time.ParseDuration(v.GetString("loop.period")); err != nil {
-		return nil, errors.Wrapf(err, "No se pudo analizar la variable de entorno CLI_LOOP_PERIOD como time.Duration.")
+		return nil, nil, errors.Wrapf(err, "Could not parse CLI_LOOP_PERIOD env var as time.Duration.")
 	}
 
-	// Leer las variables de entorno para la apuesta (Modificación de código para el ejercicio 5).
-	nombre_apuesta := os.Getenv("NOMBRE")
-	apellido_apuesta := os.Getenv("APELLIDO")
-	documento_apuesta := os.Getenv("DOCUMENTO")
-	fecha_nacimiento_apuesta := os.Getenv("NACIMIENTO")
-	numero_apuesta := os.Getenv("NUMERO")
+	bet_name := os.Getenv("NOMBRE")
+	bet_lastname := os.Getenv("APELLIDO")
+	bet_document := os.Getenv("DOCUMENTO")
+	bet_birthdate := os.Getenv("NACIMIENTO")
+	bet_number := os.Getenv("NUMERO")
+
 	bet := &common.Bet{
 		AgencyId:  v.GetString("id"),
-		Name:      nombre_apuesta,
-		LastName:  apellido_apuesta,
-		Document:  documento_apuesta,
-		BirthDate: fecha_nacimiento_apuesta,
-		Number:    numero_apuesta,
+		Name:      bet_name,
+		LastName:  bet_lastname,
+		Document:  bet_document,
+		BirthDate: bet_birthdate,
+		Number:    bet_number,
 	}
 
-	return v, nil
+	return v, bet, nil
 }
 
-// Configura el sistema de logs según el nivel recibido (DEBUG, INFO, ERROR, etc).
-// Si el nivel es válido lo aplica, si no devuelve un error.
+// InitLogger Receives the log level to be set in go-logging as a string. This method
+// parses the string and set the level to the logger. If the level string is not
+// valid an error is returned
 func InitLogger(logLevel string) error {
 	baseBackend := logging.NewLogBackend(os.Stdout, "", 0)
 	format := logging.MustStringFormatter(
 		`%{time:2006-01-02 15:04:05} %{level:.5s}     %{message}`,
 	)
-
 	backendFormatter := logging.NewBackendFormatter(baseBackend, format)
+
 	backendLeveled := logging.AddModuleLevel(backendFormatter)
 	logLevelCode, err := logging.LogLevel(logLevel)
 	if err != nil {
 		return err
 	}
-
 	backendLeveled.SetLevel(logLevelCode, "")
+
+	// Set the backends to be used.
 	logging.SetBackend(backendLeveled)
 	return nil
 }
 
-// Muestra por log los valores actuales de configuración.
-// Útil para depuración y ver qué parámetros se están usando.
+// PrintConfig Print all the configuration parameters of the program.
+// For debugging purposes only
 func PrintConfig(v *viper.Viper) {
 	log.Infof("action: config | result: success | client_id: %s | server_address: %s | loop_amount: %v | loop_period: %v | log_level: %s",
 		v.GetString("id"),
@@ -92,9 +107,8 @@ func PrintConfig(v *viper.Viper) {
 	)
 }
 
-// Función main del programa.
 func main() {
-	v, apuesta, err := InitConfig()
+	v, bet, err := InitConfig()
 	if err != nil {
 		log.Criticalf("%s", err)
 	}
@@ -105,7 +119,10 @@ func main() {
 
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGTERM)
+
+	// Print program config with debugging purposes
 	PrintConfig(v)
+
 	clientConfig := common.ClientConfig{
 		ServerAddress: v.GetString("server.address"),
 		ID:            v.GetString("id"),
@@ -113,6 +130,6 @@ func main() {
 		LoopPeriod:    v.GetDuration("loop.period"),
 	}
 
-	client := common.NewClient(clientConfig, *apuesta)
+	client := common.NewClient(clientConfig, *bet)
 	client.StartClientLoop(sigChan)
 }

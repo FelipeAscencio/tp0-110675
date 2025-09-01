@@ -6,94 +6,85 @@ INDICE_NOMBRE_ARCHIVO = 1
 INDICE_CANT_CLIENTES = 2
 
 # Metadatos del stack.
-NOMBRE_STACK = "tp0"
+PROJECT_NAME            = "tp0"
 
-# Servicio servidor.
-SERVIDOR_NOMBRE_SERVICIO = "server"
-SERVIDOR_NOMBRE_CONTENEDOR = "server"
-SERVIDOR_IMAGEN = "server:latest"
-SERVIDOR_ENTRYPOINT = "python3 /main.py"
-SERVIDOR_ENV_PYTHONUNBUFFERED = "1"
-VOLUMEN_SERVIDOR = "./server/config.ini:/config.ini"
+# Servicio Servidor.
+SERVER_NAME             = "server"
+SERVER_IMAGE            = "server:latest"
+SERVER_ENTRYPOINT       = "python3 /main.py"
+ENV_PYTHON_UNBUFFERED   = "PYTHONUNBUFFERED=1"
+CLIENT_PREFIX           = "client"
+SERVER_CONFIG           = "./server/config.ini:/config.ini"
 
-# Servicio cliente.
-CLIENTE_IMAGEN = "client:latest"
-CLIENTE_ENTRYPOINT = "/client"
-VOLUMEN_CLIENTE  = "./client/config.yaml:/config.yaml"
-
-# Constantes generales de cliente
-CLIENTE_NOMBRE = "Santiago Lionel"
-CLIENTE_APELLIDO = "Lorca"
-CLIENTE_DOCUMENTO = "30904465"
-CLIENTE_FECHA_NACIMIENTO = "1999-03-17"
-CLIENTE_NUMERO = "7574"
+# Servicio Cliente.
+CLIENT_IMAGE            = "client:latest"
+CLIENT_ENTRYPOINT       = "/client"
+ENV_CLI_ID              = "CLI_ID"
+CLIENT_NOMBRE           = "Santiago Lionel"
+CLIENT_APELLIDO         = "Lorca"
+CLIENT_DOCUMENTO        = "30904465"
+CLIENT_NACIMIENTO       = "1999-03-17"
+CLIENT_NUMERO           = "7574"
 
 # Red.
-NOMBRE_RED = "testing_net"
-SUBRED_CIDR = "172.25.125.0/24"
+NETWORK_NAME            = "testing_net"
+NETWORK_DRIVER          = "default"
+NETWORK_SUBNET          = "172.25.125.0/24"
+CLIENT_CONFIG           = "./client/config.yaml:/config.yaml"
 
 # Función para generar el archivo docker-compose.
-def generar_archivo(nombre_archivo: str, cantidad_clientes: int) -> None:
-    """
-    Genera un archivo docker-compose con un servicio servidor y N clientes.
-    """
-
-    # Bloque inicial (name + servicio server).
-    compose = f"""name: {NOMBRE_STACK}
+def generate_file(filename, clients):
+    compose = f"""name: {PROJECT_NAME}
 services:
-  {SERVIDOR_NOMBRE_SERVICIO}:
-    container_name: {SERVIDOR_NOMBRE_CONTENEDOR}
-    image: {SERVIDOR_IMAGEN}
-    entrypoint: {SERVIDOR_ENTRYPOINT}
+  {SERVER_NAME}:
+    container_name: {SERVER_NAME}
+    image: {SERVER_IMAGE}
+    entrypoint: {SERVER_ENTRYPOINT}
     environment:
-    - PYTHONUNBUFFERED={SERVIDOR_ENV_PYTHONUNBUFFERED}
+    - {ENV_PYTHON_UNBUFFERED}
     networks:
-    - {NOMBRE_RED}
+    - {NETWORK_NAME}
     volumes:
-      - {VOLUMEN_SERVIDOR}
+      - {SERVER_CONFIG}
 """
-
-    # Bloques de cada cliente.
-    for i in range(1, cantidad_clientes + 1):
+    
+    for i in range(1, clients + 1):
         compose += f"""
-  client{i}:
-    container_name: client{i}
-    image: {CLIENTE_IMAGEN}
-    entrypoint: {CLIENTE_ENTRYPOINT}
+  {CLIENT_PREFIX}{i}:
+    container_name: {CLIENT_PREFIX}{i}
+    image: {CLIENT_IMAGE}
+    entrypoint: {CLIENT_ENTRYPOINT}
     environment:
-      - CLI_ID={i}
-      - NOMBRE={CLIENTE_NOMBRE}
-      - APELLIDO={CLIENTE_APELLIDO}
-      - DOCUMENTO={CLIENTE_DOCUMENTO}
-      - NACIMIENTO={CLIENTE_FECHA_NACIMIENTO}
-      - NUMERO={CLIENTE_NUMERO}
+      - {ENV_CLI_ID}={i}
+      - NOMBRE={CLIENT_NOMBRE}
+      - APELLIDO={CLIENT_APELLIDO}
+      - DOCUMENTO={CLIENT_DOCUMENTO}
+      - NACIMIENTO={CLIENT_NACIMIENTO}
+      - NUMERO={CLIENT_NUMERO}
     networks:
-      - {NOMBRE_RED}
+      - {NETWORK_NAME}
     volumes:
-      - {VOLUMEN_CLIENTE}
+      - {CLIENT_CONFIG}
     depends_on:
-      - {SERVIDOR_NOMBRE_SERVICIO}
+      - {SERVER_NAME}
 """
-
-    # Bloque de redes.
+    
     compose += f"""
 networks:
-  {NOMBRE_RED}:
+  {NETWORK_NAME}:
     ipam:
-      driver: default
+      driver: {NETWORK_DRIVER}
       config:
-        - subnet: {SUBRED_CIDR}
+        - subnet: {NETWORK_SUBNET}
 """
-
-    # Escritura del archivo.
-    with open(nombre_archivo, "w") as f:
+    
+    with open(filename, "w") as f:
         f.write(compose)
 
-    # Mensaje final.
-    print(f"Archivo {nombre_archivo} generado con {cantidad_clientes} clientes.")
+    print(f"Archivo {filename} generado con {clients} clientes.")
 
-# Punto de entrada del programa.
+# Punto de entrada del script.
 if __name__ == "__main__":
-    nombre_archivo = sys.argv[INDICE_NOMBRE_ARCHIVO]
-    cant_clientes = int(sys.argv[INDICE_CANT_CLIENTES])
-    generar_archivo(nombre_archivo, cant_clientes)
+    filename = sys.argv[INDICE_NOMBRE_ARCHIVO]
+    clients = int(sys.argv[INDICE_CANT_CLIENTES])
+    generate_file(filename, clients)
