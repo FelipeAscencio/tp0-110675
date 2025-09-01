@@ -5,8 +5,8 @@ package common
 import (
 	"net"
 	"os"
-	"strconv"   // Modificación de código para el ejercicio 5.
-	"strings"   // Modificación de código para el ejercicio 5.
+	"strconv"
+	"strings"
 	"time"
 	"github.com/op/go-logging"
 )
