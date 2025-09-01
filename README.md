@@ -12,4 +12,14 @@ X.
 
 ### Archivos modificados
 
-X.
+#### Archivos editados
+
+- mi-generador.py
+- docker-compose-dev.yaml
+- client/config.yaml
+- client/main.go
+- client/common/client.go
+
+#### Archivos creados
+
+- client/common/utils.go

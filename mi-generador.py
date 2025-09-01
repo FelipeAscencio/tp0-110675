@@ -21,6 +21,13 @@ CLIENTE_IMAGEN = "client:latest"
 CLIENTE_ENTRYPOINT = "/client"
 VOLUMEN_CLIENTE  = "./client/config.yaml:/config.yaml"
 
+# Constantes generales de cliente
+CLIENTE_NOMBRE = "Santiago Lionel"
+CLIENTE_APELLIDO = "Lorca"
+CLIENTE_DOCUMENTO = "30904465"
+CLIENTE_FECHA_NACIMIENTO = "1999-03-17"
+CLIENTE_NUMERO = "7574"
+
 # Red.
 NOMBRE_RED = "testing_net"
 SUBRED_CIDR = "172.25.125.0/24"
@@ -55,6 +62,11 @@ services:
     entrypoint: {CLIENTE_ENTRYPOINT}
     environment:
       - CLI_ID={i}
+      - NOMBRE={CLIENTE_NOMBRE}
+      - APELLIDO={CLIENTE_APELLIDO}
+      - DOCUMENTO={CLIENTE_DOCUMENTO}
+      - NACIMIENTO={CLIENTE_FECHA_NACIMIENTO}
+      - NUMERO={CLIENTE_NUMERO}
     networks:
       - {NOMBRE_RED}
     volumes:

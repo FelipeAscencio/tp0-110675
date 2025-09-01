@@ -23,7 +23,7 @@ var log = logging.MustGetLogger("log")
 // Las variables de entorno tienen prioridad. 
 // Valida que loop.period sea un tiempo válido.
 // Devuelve la configuración lista para usar o un error.
-func InitConfig() (*viper.Viper, error) {
+func InitConfig() (*viper.Viper, *common.Bet, error) {
 	v := viper.New()
 	v.AutomaticEnv()
 	v.SetEnvPrefix("cli")
@@ -40,6 +40,21 @@ func InitConfig() (*viper.Viper, error) {
 
 	if _, err := time.ParseDuration(v.GetString("loop.period")); err != nil {
 		return nil, errors.Wrapf(err, "No se pudo analizar la variable de entorno CLI_LOOP_PERIOD como time.Duration.")
+	}
+
+	// Leer las variables de entorno para la apuesta (Modificación de código para el ejercicio 5).
+	nombre_apuesta := os.Getenv("NOMBRE")
+	apellido_apuesta := os.Getenv("APELLIDO")
+	documento_apuesta := os.Getenv("DOCUMENTO")
+	fecha_nacimiento_apuesta := os.Getenv("NACIMIENTO")
+	numero_apuesta := os.Getenv("NUMERO")
+	bet := &common.Bet{
+		AgencyId:  v.GetString("id"),
+		Name:      nombre_apuesta,
+		LastName:  apellido_apuesta,
+		Document:  documento_apuesta,
+		BirthDate: fecha_nacimiento_apuesta,
+		Number:    numero_apuesta,
 	}
 
 	return v, nil
@@ -79,7 +94,7 @@ func PrintConfig(v *viper.Viper) {
 
 // Función main del programa.
 func main() {
-	v, err := InitConfig()
+	v, apuesta, err := InitConfig()
 	if err != nil {
 		log.Criticalf("%s", err)
 	}
@@ -88,9 +103,8 @@ func main() {
 		log.Criticalf("%s", err)
 	}
 
-	sigChan := make(chan os.Signal, 1)   // Modificación de código para manejar la señal pedida.
-	signal.Notify(sigChan, syscall.SIGTERM)   // Modificación de código para manejar la señal pedida.
-
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGTERM)
 	PrintConfig(v)
 	clientConfig := common.ClientConfig{
 		ServerAddress: v.GetString("server.address"),
@@ -99,7 +113,6 @@ func main() {
 		LoopPeriod:    v.GetDuration("loop.period"),
 	}
 
-	client := common.NewClient(clientConfig)
-
-	client.StartClientLoop(sigChan)   // Modificación de código para manejar la señal pedida.
+	client := common.NewClient(clientConfig, *apuesta)
+	client.StartClientLoop(sigChan)
 }

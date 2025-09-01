@@ -3,12 +3,18 @@ package common
 
 // Importación de los paquetes necesarios.
 import (
-	"bufio"
-	"fmt"
 	"net"
-	"os"   // Modificación de código para manejar la señal pedida.
+	"os"
+	"strconv"   // Modificación de código para el ejercicio 5.
+	"strings"   // Modificación de código para el ejercicio 5.
 	"time"
 	"github.com/op/go-logging"
+)
+
+// Constantes para índices de los campos de la respuesta.
+const (
+	INDEX_DOCUMENTO = 0
+	INDEX_NUMERO   = 1
 )
 
 // Declaración de una variable global para el logger.
@@ -26,14 +32,16 @@ type ClientConfig struct {
 type Client struct {
 	config ClientConfig
 	conn   net.Conn
+	bet    Bet // Modificación de código para el ejercicio 5.
 }
 
 // Función que crea un nuevo cliente con la configuración dada.
-func NewClient(config ClientConfig) *Client {
+func NewClient(config ClientConfig, bet Bet) *Client {
 	client := &Client{
 		config: config,
+		bet:    bet,
 	}
-
+	
 	return client
 }
 
@@ -47,46 +55,46 @@ func (c *Client) createClientSocket() error {
 			err,
 		)
 	}
-
+	
 	c.conn = conn
 	return nil
 }
 
 // Función que inicia el loop del cliente, enviando mensajes al servidor.
-func (c *Client) StartClientLoop(sigChan chan os.Signal) {   // Modificación de código para manejar la señal pedida.
-	for msgID := 1; msgID <= c.config.LoopAmount; msgID++ {
-		select {   // Modificación de código para manejar la señal pedida.
-		case <-sigChan:   // Modificación de código para manejar la señal pedida.
-			log.Infof("action: shutdown | result: success")   // Modificación de código para manejar la señal pedida.
-			return   // Modificación de código para manejar la señal pedida.
-		default:   // Modificación de código para manejar la señal pedida.
-			c.createClientSocket()
-			fmt.Fprintf(
-				c.conn,
-				"[CLIENT %v] Message N°%v\n",
+func (c *Client) StartClientLoop(sigChan chan os.Signal) {
+	select {
+	case <-sigChan:
+		log.Infof("action: shutdown | result: success")
+		return
+	default:
+
+		// Modificación de código para el ejercicio 5.
+		c.createClientSocket()
+		err := sendBet(c.conn, c.bet)
+		if err != nil {
+			return
+		}
+
+		mensaje, err := receiveMessage(c.conn)
+		if err != nil {
+			log.Errorf("action: finalizar_envio | result: fail | error: %v",
 				c.config.ID,
-				msgID,
+				err,
 			)
 
-			msg, err := bufio.NewReader(c.conn).ReadString('\n')
-			c.conn.Close()
-			if err != nil {
-				log.Errorf("action: receive_message | result: fail | client_id: %v | error: %v",
-					c.config.ID,
-					err,
-				)
+			return
+		}
 
-				return
-			}
-
-			log.Infof("action: receive_message | result: success | client_id: %v | msg: %v",
-				c.config.ID,
-				msg,
-			)
-
-			time.Sleep(c.config.LoopPeriod)
+		c.conn.Close()
+		response_data := strings.Split(mensaje, ",")
+		rsp_doc, _ := strconv.Atoi(strings.TrimSpace(response_data[INDEX_DOCUMENTO]))
+		rsp_num, _ := strconv.Atoi(strings.TrimSpace(response_data[INDEX_NUMERO]))
+		bet_doc, _ := strconv.Atoi(strings.TrimSpace(c.bet.Document))
+		bet_num, _ := strconv.Atoi(strings.TrimSpace(c.bet.Number))
+		if rsp_doc == bet_doc && rsp_num == bet_num {
+			log.Infof("action: apuesta_enviada | result: success | dni: %v | numero: %v", c.bet.Document, c.bet.Number)
+		} else {
+			log.Errorf("action: apuesta_enviada | result: fail | dni: %v | numero: %v", c.bet.Document, c.bet.Number)
 		}
 	}
-
-	log.Infof("action: loop_finished | result: success | client_id: %v", c.config.ID)
 }
