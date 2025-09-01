@@ -1,5 +1,4 @@
 // Todo este archivo es generado para el ejercicio 5.
-
 // Declaración del paquete common.
 package common
 
@@ -15,8 +14,10 @@ import (
 
 // Constantes de configuración del protocolo
 const (
-	MAX_TAMANIO_MENSAJE = 8192 // Máximo tamaño del mensaje (8 KB),
-	TAMANIO_BYTES       = 2    // Cantidad de bytes reservados para representar el tamaño,
+	 // Máximo tamaño del mensaje (8 KB),
+	MAX_TAMANIO_MENSAJE = 8192
+	// Cantidad de bytes reservados para representar el tamaño,
+	TAMANIO_BYTES = 2
 )
 
 // Estructura que representa una apuesta.

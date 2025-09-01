@@ -22,7 +22,7 @@ var log = logging.MustGetLogger("log")
 
 // Carga la configuración de la app usando Viper.
 // Lee primero variables de entorno (con prefijo CLI) y después el archivo config.yaml.
-// Las variables de entorno tienen prioridad. 
+// Las variables de entorno tienen prioridad.
 // Valida que loop.period sea un tiempo válido.
 // Devuelve la configuración lista para usar o un error.
 func InitConfig() (*viper.Viper, *common.Bet, error) {
