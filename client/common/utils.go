@@ -1,6 +1,7 @@
-// Package common provides utilities (Archivo generado para ej_5).
+// Declaración del paquete common.
 package common
 
+// Archivo generado para la resolución del ejercicio 5.
 // Importación de los paquetes necesarios.
 import (
 	"bufio"
@@ -11,7 +12,7 @@ import (
 	"strings"
 )
 
-// Constantes de configuración del protocolo
+// Constantes de configuración del protocolo.
 const (
 	 // Máximo tamaño del mensaje (8 KB),
 	MAX_TAMANIO_MENSAJE = 8192
