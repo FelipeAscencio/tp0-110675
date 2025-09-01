@@ -42,6 +42,7 @@ services:
     entrypoint: {SERVER_ENTRYPOINT}
     environment:
     - {ENV_PYTHON_UNBUFFERED}
+    - CLIENTS={clients}
     networks:
     - {NETWORK_NAME}
     volumes:
