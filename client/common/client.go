@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
 	"github.com/op/go-logging"
 )
 
@@ -64,7 +65,7 @@ func (c *Client) createClientSocket() error {
 
 // Función que inicia el loop del cliente, enviando mensajes al servidor.
 func (c *Client) StartClientLoop(sigChan chan os.Signal) {
-	c.createClientSocket()
+	_ = c.createClientSocket()
 	bets_totales := len(c.bets)
 	contador_bets := 0
 
@@ -122,7 +123,7 @@ loop:
 		return
 	} else {
 		log.Infof("action: finalizar_envio | result: success")
-		c.conn.Close()
+		_ = c.conn.Close()
 		time.Sleep(DELAY * time.Millisecond)
 	}
 }
