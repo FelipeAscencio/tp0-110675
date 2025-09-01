@@ -1,12 +1,14 @@
 // Declaración del paquete main.
 package main
 
+// Importación de los paquetes necesarios.
+// Se agregan os/signal y syscall para manejar la señal pedida.
 import (
 	"fmt"
 	"os"
-	"os/signal" // Modificación de código para manejar la señal pedida.
+	"os/signal"
 	"strings"
-	"syscall" // Modificación de código para manejar la señal pedida.
+	"syscall"
 	"time"
 
 	"github.com/op/go-logging"
@@ -15,7 +17,6 @@ import (
 
 	"github.com/7574-sistemas-distribuidos/docker-compose-init/client/common"
 )
-
 
 // Declaración de una variable global para el logger.
 var log = logging.MustGetLogger("log")
