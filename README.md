@@ -4,7 +4,32 @@
 
 ### Descripción
 
-X.
+Se adaptó el sistema para que, una vez que cada **Cliente** termina de enviar sus apuestas, pueda consultar directamente los resultados del sorteo.
+
+El **Server**, al recibir la señal de cierre (*FINISH*) de todos los clientes, queda habilitado para ejecutar el sorteo mediante las funciones `load_bets` y `has_won`.
+
+El sorteo se ejecuta una única vez y su resultado queda almacenado en memoria dentro del servidor, evitando recalcular en cada consulta.
+
+De este modo, múltiples clientes pueden solicitar los resultados sin que se repita el proceso.
+
+### Cambios en el protocolo
+
+#### Nuevos mensajes de control
+
+- **BET** → Enviado por el cliente al iniciar el envío de apuestas, para que el servidor se prepare a recibirlas.  
+- **RESULTS** → Enviado por el cliente para pedir los resultados. El mensaje incluye el ID del cliente/agencia para que el servidor sepa a qué apuestas filtrar.
+
+#### Flujo de resultados
+
+- Una vez que **todos los clientes** han enviado *FINISH*, el primer mensaje *RESULTS* recibido provoca la ejecución del sorteo.  
+- El servidor responde al cliente con la lista de documentos de los ganadores de esa agencia, en el formato: 'DOCUMENTO1,DOCUMENTO2,DOCUMENTO3,DOCUMENTO4'.
+- Si la agencia no tuvo ganadores, el servidor devuelve el mensaje **NOWINNERS**.
+
+### Comportamiento antes del cierre total
+
+Si el servidor aún no recibió *FINISH* de todos los clientes, ignora cualquier pedido de *RESULTS*.
+
+En ese caso, los clientes deben volver a intentar la consulta aplicando una estrategia de **reintento con espera incremental** (*sleep* creciente en cada ciclo).
 
 ### Uso
 
