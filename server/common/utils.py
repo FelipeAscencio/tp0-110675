@@ -1,16 +1,27 @@
+# Importación de los paquetes necesarios.
 import csv
 import datetime
 import time
 import logging
 
-
+# Constantes de configuración.
 """ Bets storage location. """
 STORAGE_FILEPATH = "./bets.csv"
 """ Simulated winner number in the lottery contest. """
 LOTTERY_WINNER_NUMBER = 7574
 
+# Constantes de tamaños, indices y límites.
+TAMANIO_HEADER = 2
+CAMPOS_APUESTA_ESPERADA = 6
+INDEX_AGENCIA = 0
+INDEX_NOMBRE = 1
+INDEX_APELLIDO = 2
+INDEX_DOCUMENTO = 3
+INDEX_FECHA_NACIMIENTO = 4
+INDEX_NUMERO = 5
+FINISH_MSJ = "FINISH"
 
-""" A lottery bet registry. """
+# Clase que representa una apuesta.
 class Bet:
     def __init__(self, agency: str, first_name: str, last_name: str, document: str, birthdate: str, number: str):
         """
@@ -18,6 +29,7 @@ class Bet:
         birthdate must be passed with format: 'YYYY-MM-DD'.
         number must be passed with integer format.
         """
+
         self.agency = int(agency)
         self.first_name = first_name
         self.last_name = last_name
@@ -50,55 +62,42 @@ def load_bets() -> list[Bet]:
         for row in reader:
             yield Bet(row[0], row[1], row[2], row[3], row[4], row[5])
 
-"""
-Receives a message from a client socket.
-"""
+# Funcion para recibir mensajes a través de sockets.
 def receive_message(client_sock):
-    size = int.from_bytes(client_sock.recv(2), byteorder='big')
-
-    data = b""
-    while len(data) < size:
-        packet = client_sock.recv(size - len(data))
-        if not packet:
+    tamanio = int.from_bytes(client_sock.recv(TAMANIO_HEADER), byteorder='big')
+    informacion = b""
+    while len(informacion) < tamanio:
+        paquete = client_sock.recv(tamanio - len(informacion))
+        if not paquete:
             raise ConnectionError("Connection closed unexpectedly")
-        data += packet
+        informacion += paquete
     
-    msg = data.decode('utf-8').strip()
+    mensaje = informacion.decode('utf-8').strip()
+    return mensaje
 
-    return msg
-
-"""
-Sends a message to a client socket.
-"""
+# Función para enviar mensajes a través de sockets.
 def send_message(client_sock, message):
-    client_sock.send("{}\n".format(message).encode('utf-8'))
+    client_sock.send("{}\n".format(message).encode('utf-8')) # Garantiza que no tenemos 'Short-write'.
 
-"""
-Decodes a bet from a client socket.
-"""
+# Función para decodificar una apuesta recibida a través de un socket.
 def decode_bets(client_sock, bet_count):
-    msg = receive_message(client_sock)
-
-    if msg == "FINISH":
+    mensaje = receive_message(client_sock)
+    if mensaje == FINISH_MSJ:
         return None, True
-    
-    decoded_bets = []
 
-    bets = msg.split(';')
-
+    bets_decodificadas = []
+    bets = mensaje.split(';')
     for bet in bets:
-        bet_data = bet.split(',')
-        if len(bet_data) != 6:
-            logging.error(f"action: apuesta_recibida | result: fail | cantidad: {bet_count} | msg: {msg} | error: Invalid bet data")
+        bet_informacion = bet.split(',')
+        if len(bet_informacion) != CAMPOS_APUESTA_ESPERADA:
+            logging.error(f"action: apuesta_recibida | result: fail | cantidad: {bet_count} | msg: {mensaje} | error: Invalid bet data")
             raise ValueError("Invalid bet data")
     
-        decoded_bet = Bet(bet_data[0], bet_data[1], bet_data[2], bet_data[3], bet_data[4], bet_data[5])
-        decoded_bets.append(decoded_bet)
+        bet_decodificada = Bet(bet_informacion[INDEX_AGENCIA], bet_informacion[INDEX_NOMBRE], bet_informacion[INDEX_APELLIDO], bet_informacion[INDEX_DOCUMENTO], bet_informacion[INDEX_FECHA_NACIMIENTO], bet_informacion[INDEX_NUMERO])
+        bets_decodificadas.append(bet_decodificada)
 
-    return decoded_bets, False
+    return bets_decodificadas, False
 
-"""
-Acknowledges that all the bets have been received to a client socket.
-"""
+# Función para enviar el acuse de recibo de una apuesta a través de un socket.
 def acknowledge_bets(client_sock, bet_count):
     send_message(client_sock, bet_count)
