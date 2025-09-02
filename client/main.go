@@ -14,7 +14,7 @@ import (
 	"github.com/op/go-logging"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
-	
+
 	"github.com/7574-sistemas-distribuidos/docker-compose-init/client/common"
 )
 
