@@ -12,7 +12,7 @@ En este repositorio se encuentra la resolución del 'Trabajo Práctico 0' de la 
 
 Cada ejercicio se encuentra resuelto en su rama correspondiente, como fue requerido en las condiciones de entrega.
 
-El correcto funcionamiento del mismo se corroboró con los tests automáticos brindados por la cátedra, y se utilizo la herramienta 'GitHub Actions' para garantizar el correcto seguimiento del estándar de 'Linter' correspondiente para ambos lenguajes de programación utilizados.
+El correcto funcionamiento del mismo se corroboró con los tests automáticos brindados por la cátedra, y se utilizó la herramienta 'GitHub Actions' para garantizar el correcto seguimiento del estándar de 'Linter' correspondiente para ambos lenguajes de programación utilizados.
 
 En cada rama se encuentra la documentación respectiva para la resolución de cada ejercicio y a continuación, en este mismo documento, se deja el enunciado brindado por la cátedra.
 
