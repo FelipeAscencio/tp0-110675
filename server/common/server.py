@@ -30,7 +30,8 @@ class Server:
         """
         Bucle de servidor ficticio.
         El servidor acepta nuevas conexiones y establece comunicación con un cliente.
-        Una vez finalizada la comunicación con el cliente, el servidor vuelve a aceptar nuevas conexiones.
+        Una vez finalizada la comunicación con el cliente, el servidor vuelve
+        a aceptar nuevas conexiones.
         """
 
         self.running = True
@@ -77,8 +78,10 @@ class Server:
                     if terminada:
                         utils.acknowledge_bets(client_sock, contador_apuesta)
                         logging.info(
-                            f"action: apuesta_recibida | result: success | cantidad: {contador_apuesta}"
+                            f"action: apuesta_recibida | result: success | "
+                            f"cantidad: {contador_apuesta}"
                         )
+                        
                         with self.candado_mutex_1:
                             self.clientes_terminados += 1
                         break
