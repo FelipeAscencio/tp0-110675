@@ -84,7 +84,7 @@ func (c *Client) StartClientLoop(sigChan chan os.Signal) {
 
 	log.Infof("action: comenzar_envio | result: success")
 
-// Loop para enviar las apuestas en lotes y luego consultar los ganadores
+	// Loop para enviar las apuestas en lotes y luego consultar los ganadores
 loop1:
 	for i := 0; i < apuestas_totales; i += c.config.BatchMaxAmount {
 		final := i + c.config.BatchMaxAmount
