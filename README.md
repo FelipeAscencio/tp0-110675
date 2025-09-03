@@ -68,6 +68,7 @@ Se actualizó el servidor (`server/common/server.py`) para que:
   - Este patrón evita condiciones de carrera y computaciones repetidas.
 - **GIL y Python**:
   - Aunque el GIL impide paralelismo puro de CPU-bound, este servidor es **I/O-bound** (sockets), por lo que **threading** es adecuado: Mientras un hilo bloquea en I/O, otros pueden avanzar.
+  - Por otro lado, a la hora de la implementación se asumió el tope de 5 clientes indicado en el enunciado. Si en un futuro se quiere trabajar con una cantidad considerablemente mas grande, se deberá cambiar la resolución para evitar vulnerabilidades ante ataques del tipo 'DDoS' (Una variante recomendada es la utilización de un 'Threadpool').
 - **Invariantes**:
   - `0 ≤ clientes_terminados ≤ clients`.
   - `winners` solo se define cuando `clientes_terminados == clients`.
