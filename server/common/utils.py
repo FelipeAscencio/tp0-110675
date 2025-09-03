@@ -21,9 +21,10 @@ INDEX_FECHA_NACIMIENTO = 4
 INDEX_NUMERO = 5
 
 # Clase que representa una apuesta.
+
+# ===== CODIGO BRINDADO POR LA CATEDRA - 0 MODIFICACIONES HECHAS ===== #
+
 """ A lottery bet registry. """
-
-
 class Bet:
     def __init__(
         self,
@@ -89,6 +90,7 @@ def load_bets() -> list[Bet]:
         for row in reader:
             yield Bet(row[0], row[1], row[2], row[3], row[4], row[5])
 
+# ===== CODIGO DE MI AUTORIA PARA CUMPLIR CON EL ENUNCIADO ===== #
 
 # Implementación de las funciones de comunicación (Para el ejercicio 5).
 # Funcion para recibir mensajes a través de sockets.
