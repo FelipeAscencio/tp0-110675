@@ -16,8 +16,10 @@ CAMPOS_APUESTA_ESPERADA = 6
 FINISH_MSJ = "FINISH"
 PERDEDORES_MSJ = "NOWINNERS"
 
-
 # Clase que representa una apuesta.
+
+# ===== CODIGO BRINDADO POR LA CATEDRA - 0 MODIFICACIONES HECHAS ===== #
+
 class Bet:
     def __init__(
         self,
@@ -82,6 +84,7 @@ def load_bets() -> list[Bet]:
         for row in reader:
             yield Bet(row[0], row[1], row[2], row[3], row[4], row[5])
 
+# ===== CODIGO DE MI AUTORIA PARA CUMPLIR CON EL ENUNCIADO ===== #1
 
 # Funcion para recibir mensajes a través de sockets.
 def receive_message(client_sock):
