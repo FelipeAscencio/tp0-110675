@@ -34,6 +34,12 @@ Cuando el cliente termina de enviar lotes, manda el mensaje de control FINISH (t
 
 Tras recibir 'FINISH', el servidor responde una sola vez con la cantidad total de apuestas recibidas en la sesión (ACK final), como línea terminada en '\n' (delimitado por newline).
 
+#### Lectura de archivo
+
+Al trabajar con archivos de tamaño pequeño, que no implican una problemática a la hora de cargarlos en memoria, se tomó la decisión de diseño de leerlos directamente, y luego trabajar los batchs con los límites definidos para facilitar la implementación, dando la verdadera restricción en el punto clave que es en la fase de envío de mensajes.
+
+Para futuras versiones, si se decide trabajar con archivos de gran tamaño, debe modificarse esa implementación para que soporte el nuevo requerimiento.
+
 ### Uso
 
 #### Generar la definición de Docker Compose:
