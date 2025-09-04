@@ -6,6 +6,22 @@
 
 ## Corrector: A definir.
 
+## Observación importante
+
+Durante el desarrollo del trabajo práctico utilicé dos computadoras distintas. En este proceso detecté que, en algunos casos puntuales, al finalizar la ejecución de ciertos ejercicios no se mostraba el mensaje esperado: `clientN exited with code 0` en una de las máquinas.
+
+Tras investigar, concluí que este comportamiento depende del ambiente en el que se ejecute el trabajo práctico. Según el entorno, el mensaje puede aparecer o no al final de la ejecución cuando se utiliza el comando por defecto:
+
+```bash
+make docker-compose-up
+```
+
+En caso de que en su entorno no aparezca dicho mensaje, se recomienda utilizar el siguiente comando como alternativa. Este comando ejecutará automáticamente el ejercicio y mostrará los logs en tiempo real, garantizando que al final de la consola se imprima el texto esperado: `clientN exited with code 0`
+
+```bash
+docker compose -f docker-compose-dev.yaml up --build
+```
+
 ## Descripción de la resolución
 
 En este repositorio se encuentra la resolución del 'Trabajo Práctico 0' de la materia 'Sistemas Distribuidos 1 (Roca)' correspondiente al segundo cuatrimestre del año 2025.
