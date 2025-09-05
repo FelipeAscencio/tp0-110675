@@ -4,7 +4,7 @@
 
 ## Padrón: 110675.
 
-## Corrector: A definir.
+## Corrector: Máximo Gismondi.
 
 ## Observación importante
 
@@ -31,6 +31,32 @@ Cada ejercicio se encuentra resuelto en su rama correspondiente, como fue requer
 El correcto funcionamiento del mismo se corroboró con los tests automáticos brindados por la cátedra, y se utilizó la herramienta 'GitHub Actions' para garantizar el correcto seguimiento del estándar de 'Linter' correspondiente para ambos lenguajes de programación utilizados.
 
 En cada rama se encuentra la documentación respectiva para la resolución de cada ejercicio y a continuación, en este mismo documento, se deja el enunciado brindado por la cátedra.
+
+## Manejo de cierre graceful en el 'Ejercicio 8' (Documentación solicitada por corrector en la defensa)
+
+La implementación controla la ocurrencia de la señal 'SIGTERM' para garantizar un cierre 'graceful' de las 2 maneras posibles.
+
+Tanto que el servidor solo reciba la señal, como que el cliente sea quien reciba, se deja a continuación la explicación de como se maneja cada caso y la justificación de ambos.
+
+#### Caso 1: Solo el servidor recibe la señal
+
+Al recibir un SIGTERM, el servidor detiene la aceptación de nuevas conexiones cerrando su socket principal y marcando su estado como “no running”.
+
+Luego espera explícitamente a que todos los hilos que estaban atendiendo clientes terminen su trabajo (Por ejemplo, procesando lotes de apuestas). Esto asegura que no se interrumpa ninguna operación en curso que pueda generar inconsistencias o cierres abruptos en nuestro sistema distribuido.
+
+Desde el punto de vista de los clientes, al intentar enviar el mensaje final de confirmación o esperar el 'ACK' del servidor, detectan que la conexión fue cerrada o que la respuesta no llega.
+
+Ante esta inconsistencia, el cliente no entra en pánico ni queda bloqueado: Registra el error y finaliza su ejecución de manera ordenada, cerrando su socket y liberando recursos. Así, aunque el servidor ya no pueda confirmar, los clientes terminan en un estado coherente.
+
+### Caso 2: Todos reciben la señal
+
+Cada cliente escucha la señal SIGTERM mediante un canal dedicado.
+
+Si la señal llega en medio del envío de lotes o de la consulta de resultados, el cliente interrumpe el bucle en curso de forma inmediata y controlada.
+
+Antes de salir, cierra su conexión con el servidor, detiene cualquier intento de reintento o espera, y registra en el log el apagado exitoso.
+
+De esta forma, no importa si estaba enviando apuestas, esperando el 'ACK' o preguntando por ganadores: El cliente no se queda bloqueado ni deja sockets abiertos. La lógica asegura que, al recibir la orden de apagado, el proceso concluya pacíficamente sin afectar al resto del sistema.
 
 ---
 
